@@ -308,6 +308,8 @@
         <button class="secondary" id="viewBtn" onclick="toggleView()">리스트</button>
 
         <label class="chk"><input type="checkbox" id="autoPlay">자동재생</label>
+
+        <label class="chk"><input type="checkbox" id="autoSuggest">연관추천</label>
       </div>
     </header>
 
@@ -383,6 +385,7 @@
     <button class="mitem" onclick="menuAction('play')">▶ 재생</button>
     <button class="mitem" onclick="menuAction('addQueue')">➕ 큐에 추가</button>
     <button class="mitem" onclick="menuAction('playNext')">⏭ 다음에 재생(큐)</button>
+    <button class=\"mitem\" onclick=\"menuAction('related')\">🔁 이 곡 기반 추천</button>
     <div class="msep"></div>
     <button class="mitem" onclick="menuAction('hideVideo')">🚫 이 영상 숨기기</button>
     <button class="mitem" onclick="menuAction('hideChannel')">🚫 이 채널 숨기기</button>
@@ -426,6 +429,11 @@
   if(savedAuto!==null) $('autoPlay').checked = (savedAuto==='1');
   $('autoPlay').addEventListener('change', ()=> localStorage.setItem(AUTO_KEY, $('autoPlay').checked?'1':'0'));
 
+
+  const SUGGEST_KEY='yt_autosuggest_lite';
+  const savedSuggest=localStorage.getItem(SUGGEST_KEY);
+  if(savedSuggest!==null) $('autoSuggest').checked = (savedSuggest==='1');
+  $('autoSuggest').addEventListener('change', ()=> localStorage.setItem(SUGGEST_KEY, $('autoSuggest').checked?'1':'0'));
   let viewMode = localStorage.getItem('yt_view_mode') || 'grid';
   let currentData=[], nextPageToken=null, currentQuery={}, activeIndex=-1;
   let isLoading=false;
@@ -630,6 +638,143 @@
     }
   }
 
+  // ===== Related / Style-ish recommendations =====
+  // NOTE: YouTube Data API는 '장르'를 직접 주지 않습니다.
+  // 대신 relatedToVideoId(연관 영상) + Music 카테고리(10) 필터로 "비슷한 스타일"을 유사하게 구성합니다.
+  async function refreshRelated(){
+    if(!currentVideo.id){ alert('먼저 영상을 재생하세요.'); return; }
+    await searchRelatedById(currentVideo.id, true);
+  }
+
+    async function searchRelatedById(videoId, isNew){
+    if(!API_KEY) return alert('API Key가 필요합니다.');
+    if(isLoading) return;
+    const region=$('region').value;
+
+    if(isNew){
+      // 기존 검색 UI를 "추천 모드"로 바꾸기
+      currentQuery={ mode:'related', q:'', relatedToVideoId: videoId, region, goal:'ref', order:'relevance', relatedMusicOnly:true };
+      nextPageToken=null;
+      currentData=[];
+      activeIndex=-1;
+      // 플레이어는 유지하고 리스트만 교체
+      $('results').innerHTML='';
+      setStatus('연관 추천 불러오는 중…');
+    }else{
+      if(!nextPageToken) return;
+      setStatus('연관 추천 더 불러오는 중…');
+    }
+
+    isLoading=true;
+    updateLoadMoreUI();
+
+    try{
+      // relatedToVideoId는 q와 같이 못 씁니다. (YouTube가 제공하는 "연관 영상" 기반)
+      const base='https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=50'
+        +'&relatedToVideoId='+encodeURIComponent(videoId)
+        +'&regionCode='+encodeURIComponent(region)
+        +'&order=relevance';
+
+      const makeUrl=(musicOnly, pageToken)=>(
+        base
+        + (musicOnly ? '&videoCategoryId=10' : '') // Music filter (너무 결과가 적으면 자동으로 해제)
+        + (pageToken ? '&pageToken='+encodeURIComponent(pageToken) : '')
+        + '&key='+encodeURIComponent(API_KEY)
+      );
+
+      // 1) 기본은 Music만으로 먼저 시도
+      let sJson = await fetchJson(makeUrl(!!currentQuery.relatedMusicOnly, (!isNew ? nextPageToken : null)));
+      let items=(sJson.items||[]).filter(x=>x?.id?.videoId);
+
+      // 2) 결과가 너무 적으면(특히 해외/비음원 영상) Music 필터를 자동 해제하고 다시 가져오기
+      if(isNew && currentQuery.relatedMusicOnly && items.length < 8){
+        currentQuery.relatedMusicOnly = false;
+        sJson = await fetchJson(makeUrl(false, null));
+        items=(sJson.items||[]).filter(x=>x?.id?.videoId);
+      }
+
+      nextPageToken=sJson.nextPageToken||null;
+      updateLoadMoreUI();
+
+      if(isNew && !items.length){
+        $('results').innerHTML='<div class="center">연관 추천 결과가 없습니다.</div>';
+        setStatus('0개 · '+region+' · 연관 추천');
+        return;
+      }
+      if(!items.length && !isNew) return;
+
+      const ids=items.map(x=>x.id.videoId).join(',');
+      const vUrl='https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id='+encodeURIComponent(ids)+'&key='+encodeURIComponent(API_KEY);
+      const vJson=await fetchJson(vUrl);
+      const detMap=new Map();
+      (vJson.items||[]).forEach(v=>detMap.set(v.id,v));
+
+      const chIds=[...new Set(items.map(x=>x.snippet?.channelId).filter(Boolean))].slice(0,50);
+      const chIconMap=new Map();
+      if(chIds.length){
+        const cUrl='https://www.googleapis.com/youtube/v3/channels?part=snippet&id='+encodeURIComponent(chIds.join(','))+'&key='+encodeURIComponent(API_KEY);
+        const cJson=await fetchJson(cUrl);
+        (cJson.items||[]).forEach(ch=>{
+          const th=ch.snippet?.thumbnails||{};
+          const url=(th.default?.url)||(th.medium?.url)||(th.high?.url)||'';
+          chIconMap.set(ch.id,url);
+        });
+      }
+
+      const seen=new Set(currentData.map(x=>x.id));
+      const newCards=[];
+      for(const it of items){
+        const vid=it.id.videoId;
+        if(seen.has(vid)) continue;
+        if(blockedVideos.has(vid)) continue;
+
+        const sn=it.snippet||{};
+        const chId=sn.channelId||'';
+        if(blockedChannels.has(chId)) continue;
+
+        const det=detMap.get(vid);
+        const publishedAt=new Date(sn.publishedAt||Date.now());
+        const viewCount=det ? Number(det.statistics?.viewCount||0) : 0;
+        const hours=Math.max(0.25,(Date.now()-publishedAt.getTime())/36e5);
+        const viewsPerHour=viewCount/hours;
+
+        newCards.push({
+          id:vid,
+          title:sn.title||'',
+          channelTitle:sn.channelTitle||'',
+          channelId:chId,
+          channelIcon:chIconMap.get(chId)||'',
+          publishedDate:(sn.publishedAt||'').slice(0,10),
+          thumbnail:(sn.thumbnails?.high?.url)||(sn.thumbnails?.medium?.url)||'',
+          durationSec: det ? parseDuration(det.contentDetails?.duration||'PT0S') : 0,
+          viewCount,
+          viewsPerHour
+        });
+        seen.add(vid);
+      }
+
+      const startIndex=currentData.length;
+      currentData=currentData.concat(newCards);
+
+      // 추천 모드는 relevance 기반이니 정렬은 그대로 둡니다.
+      if(isNew) renderFull();
+      else appendCards(newCards, startIndex);
+
+      const hint = currentQuery.relatedMusicOnly ? '(Music 필터)' : '(필터 해제)';
+      setStatus('연관 추천: '+currentData.length+'개 · '+region+' · '+hint);
+    }catch(e){
+      console.error(e);
+      setStatus('오류');
+      $('results').innerHTML='<div class="center">오류: '+escapeHtml(e.message)+'</div>';
+      nextPageToken=null;
+    }finally{
+      isLoading=false;
+      updateLoadMoreUI();
+      observeInlineVisibility();
+    }
+  }
+
+
   // ===== Render =====
   function cardHTML(v, idx){
     const vph=Math.round(v.viewsPerHour||0);
@@ -718,6 +863,7 @@
         <div class="player-title" id="pTitle">재생</div>
         <div class="player-actions">
           <button class="ghost" onclick="openQueue()">큐</button>
+          <button class="ghost" onclick="refreshRelated()">연관</button>
           <button class="ghost" onclick="openNewTab()">새 탭</button>
           <button class="ghost" onclick="closePlayer()">닫기</button>
         </div>
@@ -833,7 +979,7 @@
     tick();
   }
   function stopMiniTicker(){ if(raf){ cancelAnimationFrame(raf); raf=0; } }
-  function updateInlinePlayer(v){
+  function updateInlinePlayer(v, userGesture=true){
     const titleEl=$('pTitle');
     if(titleEl) titleEl.innerText = v.title || '재생';
 
@@ -842,13 +988,20 @@
 
     if(!ytReady || typeof YT==='undefined' || !YT.Player) return;
 
-    const autoplay = $('autoPlay').checked ? 1 : 0;
+    const shouldPlay = userGesture || $('autoPlay').checked;
 
     // ✅ 이미 플레이어가 있으면: 파괴하지 말고 영상만 교체
     if(player && typeof player.loadVideoById === 'function'){
       try{
-        player.loadVideoById({ videoId: v.id });
-        if(autoplay) player.playVideo();
+        if(shouldPlay){
+          player.loadVideoById({ videoId: v.id });
+          // 일부 환경 보정
+          try{ player.playVideo(); }catch(_){}
+        }else{
+          // 자동재생 OFF 상태에서는 큐만 해두기
+          if(typeof player.cueVideoById === 'function') player.cueVideoById({ videoId: v.id });
+          else player.loadVideoById({ videoId: v.id });
+        }
       }catch(e){}
       updatePlayIcon();
       return;
@@ -858,7 +1011,7 @@
     player = new YT.Player('playerHost', {
       videoId: v.id,
       playerVars: {
-        autoplay,
+        autoplay: shouldPlay ? 1 : 0,
         rel: 0,
         playsinline: 1,
         origin: (location.origin && location.origin !== 'null') ? location.origin : ''
@@ -866,17 +1019,18 @@
       events:{
         onReady: (e)=>{
           updatePlayIcon(); startMiniTicker(); observeInlineVisibility();
-          if(autoplay){
+          if(shouldPlay){
             try{ e.target.playVideo(); }catch(_){}
           }
         },
         onStateChange: (e)=>{
           updatePlayIcon();
-          if(typeof YT!=='undefined' && e.data===YT.PlayerState.ENDED) next();
+          if(typeof YT!=='undefined' && e.data===YT.PlayerState.ENDED) next(true);
         }
       }
     });
   }
+
 
   // ===== Click item =====
   function onItemClick(idx){
@@ -894,26 +1048,34 @@
     const results=$('results');
     const block=ensureInlinePlayer();
 
-    if(viewMode==='list'){
-      const items=Array.from(results.querySelectorAll('.li'));
-      const anchor=items.find(x=>Number(x.dataset.idx)===idx);
-      if(anchor && anchor.parentNode) anchor.insertAdjacentElement('afterend', block);
-      else results.appendChild(block);
-    }else{
-      const cols=calcCols();
-      const rowStart=Math.floor(idx/cols)*cols;
-      const rowEnd=Math.min(currentData.length-1, rowStart+cols-1);
-      const cards=Array.from(results.querySelectorAll('.card'));
-      const anchor=cards.find(x=>Number(x.dataset.idx)===rowEnd);
-      if(anchor && anchor.parentNode) anchor.insertAdjacentElement('afterend', block);
-      else results.appendChild(block);
+    // ✅ 유튜브 플레이어는 DOM을 계속 옮기면(iframe 이동) 환경에 따라 제어가 꼬일 수 있어,
+    //    첫 생성 때만 "인라인 배치", 이후에는 위치 고정(스크롤만 이동)으로 안정화합니다.
+    const canMoveInline = !player; // 아직 플레이어가 없을 때만 이동
+    if(!block.parentNode) results.appendChild(block);
+
+    if(canMoveInline){
+      if(viewMode==='list'){
+        const items=Array.from(results.querySelectorAll('.li'));
+        const anchor=items.find(x=>Number(x.dataset.idx)===idx);
+        if(anchor && anchor.parentNode) anchor.insertAdjacentElement('afterend', block);
+        else results.appendChild(block);
+      }else{
+        const cols=calcCols();
+        const rowStart=Math.floor(idx/cols)*cols;
+        const rowEnd=Math.min(currentData.length-1, rowStart+cols-1);
+        const cards=Array.from(results.querySelectorAll('.card'));
+        const anchor=cards.find(x=>Number(x.dataset.idx)===rowEnd);
+        if(anchor && anchor.parentNode) anchor.insertAdjacentElement('afterend', block);
+        else results.appendChild(block);
+      }
     }
 
     requestAnimationFrame(()=>{
-      updateInlinePlayer(v);
+      updateInlinePlayer(v, true); // 클릭은 항상 userGesture로 재생
       setTimeout(()=>scrollToCenter(block), 60);
     });
   }
+
 
   // ===== Mini controls =====
   function togglePlay(){
@@ -922,31 +1084,39 @@
     if(st===YT.PlayerState.PLAYING) player.pauseVideo();
     else player.playVideo();
   }
-  function prev(){
+  function prev(isAuto=false){
     if(!queue.length) return;
+    if(isAuto && !$('autoPlay').checked) return;
     if(queuePos>0) queuePos--;
-    playQueuePos();
+    playQueuePos(!isAuto);
   }
-  function next(){
+
+  function next(isAuto=false){
     if(!queue.length) return;
+    if(isAuto && !$('autoPlay').checked) return;
     if(queuePos < queue.length-1) queuePos++;
-    playQueuePos();
+    playQueuePos(!isAuto);
   }
-  function playQueuePos(){
+
+  function playQueuePos(userGesture=true){
     const t=queue[queuePos];
     if(!t) return;
 
     // currentData에서 찾으면 그 idx로 이동
     const idx=currentData.findIndex(v=>v.id===t.id);
-    if(idx>=0){ onItemClick(idx); return; }
+    if(idx>=0){
+      onItemClick(idx); // onItemClick 자체가 userGesture=true로 재생 처리
+      return;
+    }
 
     // fallback: 그냥 재생
     const block=ensureInlinePlayer();
     $('results').appendChild(block);
     activeIndex=-1;
-    updateInlinePlayer({ id:t.id, title:t.title, channelTitle:t.channel, thumbnail:t.thumb });
+    updateInlinePlayer({ id:t.id, title:t.title, channelTitle:t.channel, thumbnail:t.thumb }, userGesture);
     scrollToCenter(block);
   }
+
 
   $('seek').addEventListener('click', (e)=>{
     if(!player || typeof player.getDuration!=='function' || typeof player.seekTo!=='function') return;
@@ -1122,6 +1292,13 @@
     if(act==='open'){ closeMenu(); window.open(url,'_blank','noopener'); return; }
     if(act==='copyUrl'){ closeMenu(); copyText(url); return; }
 
+    if(act==='related'){
+      closeMenu();
+      // 선택한 영상 기준으로 추천 리스트로 전환
+      searchRelatedById(v.id, true);
+      return;
+    }
+
     closeMenu();
   }
 
@@ -1166,6 +1343,8 @@
   window.openMenu=openMenu;
   window.closeMenu=closeMenu;
   window.menuAction=menuAction;
+
+  window.refreshRelated=refreshRelated;
 
   window.togglePlay=togglePlay;
   window.prev=prev;
