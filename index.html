@@ -833,7 +833,6 @@
     tick();
   }
   function stopMiniTicker(){ if(raf){ cancelAnimationFrame(raf); raf=0; } }
-
   function updateInlinePlayer(v){
     const titleEl=$('pTitle');
     if(titleEl) titleEl.innerText = v.title || '재생';
@@ -841,17 +840,40 @@
     currentVideo = { id:v.id, title:v.title, channel:v.channelTitle, thumb:v.thumbnail, url:'https://www.youtube.com/watch?v='+v.id };
     updateMiniMeta();
 
-    // player 생성/교체
-    if(player && typeof player.destroy==='function'){ try{ player.destroy(); }catch(e){} player=null; }
     if(!ytReady || typeof YT==='undefined' || !YT.Player) return;
 
     const autoplay = $('autoPlay').checked ? 1 : 0;
+
+    // ✅ 이미 플레이어가 있으면: 파괴하지 말고 영상만 교체
+    if(player && typeof player.loadVideoById === 'function'){
+      try{
+        player.loadVideoById({ videoId: v.id });
+        if(autoplay) player.playVideo();
+      }catch(e){}
+      updatePlayIcon();
+      return;
+    }
+
+    // ✅ 처음 생성될 때만 new YT.Player
     player = new YT.Player('playerHost', {
       videoId: v.id,
-      playerVars: { autoplay, rel:0, playsinline:1, origin:(location.origin && location.origin!=='null')?location.origin:'' },
+      playerVars: {
+        autoplay,
+        rel: 0,
+        playsinline: 1,
+        origin: (location.origin && location.origin !== 'null') ? location.origin : ''
+      },
       events:{
-        onReady: ()=>{ updatePlayIcon(); startMiniTicker(); observeInlineVisibility(); },
-        onStateChange: (e)=>{ updatePlayIcon(); if(typeof YT!=='undefined' && e.data===YT.PlayerState.ENDED) next(); }
+        onReady: (e)=>{
+          updatePlayIcon(); startMiniTicker(); observeInlineVisibility();
+          if(autoplay){
+            try{ e.target.playVideo(); }catch(_){}
+          }
+        },
+        onStateChange: (e)=>{
+          updatePlayIcon();
+          if(typeof YT!=='undefined' && e.data===YT.PlayerState.ENDED) next();
+        }
       }
     });
   }
