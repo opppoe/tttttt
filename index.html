@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>YouTube Music Player (Dynamic)</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Music">
+<meta name="theme-color" content="#000000">
+
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' style='background:%23000'%3E%3Crect width='100%25' height='100%25' fill='%231c1c1e'/%3E%3Cpath d='M180 140v232l200-116-200-116z' fill='%23ff0000'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' style='background:%23000'%3E%3Crect width='100%25' height='100%25' fill='%231c1c1e'/%3E%3Cpath d='M180 140v232l200-116-200-116z' fill='%23ff0000'/%3E%3C/svg%3E">
+
+<link rel="manifest" href='data:application/manifest+json,{"name":"YouTube Music Pro","short_name":"Music","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#000000","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27 style=%27background:%23000%27%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%231c1c1e%27/%3E%3Cpath d=%27M180 140v232l200-116-200-116z%27 fill=%27%23ff0000%27/%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}'>
+  <style>
+    /* 1. 기본 테마 설정 */
+    :root{ --bg:#000; --card:#1c1c1e; --elev:#2c2c2e; --text:#fff; --sub:rgba(255,255,255,.65); --accent:#007aff; --warn:#ff453a; --border:rgba(255,255,255,.12); --radius:10px; --minCard:300px; --yt-red:#ff0000; }
+    *{box-sizing:border-box}
+    body{ margin:0;padding:12px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text); padding-bottom:80px; }
+    .container{width:100%; max-width:1800px; margin:0 auto; padding:0 4px;}
+    
+    /* 2. 헤더 */
+    header{ 
+      background:rgba(28,28,30,.95); backdrop-filter:blur(12px); 
+      border:1px solid var(--border); border-radius:var(--radius); 
+      padding:8px 12px; 
+      display:flex; align-items:center; gap:8px; 
+      margin-bottom:0; 
+      position: sticky; top: 0; z-index: 100;
+      white-space: nowrap; overflow-x: auto;
+    }
+    header::-webkit-scrollbar{display:none} 
+    
+    input, select, button { 
+      background:var(--elev); border:1px solid var(--border); color:var(--text); 
+      height: 36px; padding:0 12px; border-radius:8px; outline:none; font-size:13px; font-weight:500;
+      display:flex; align-items:center; justify-content:center;
+    }
+    input:focus, select:focus{ border-color:var(--accent); }
+    
+    #keyword { flex: 1; min-width: 150px; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.15); }
+    #keyword:focus { background:rgba(0,0,0,0.5); border-color:var(--accent); }
+
+    button{ background:var(--accent); color:#fff; border:0; cursor:pointer; font-weight:700; transition:.2s; }
+    button:hover { filter: brightness(1.1); }
+    button.secondary{ background:rgba(255,255,255,.1); border:1px solid var(--border); color:var(--text); font-weight:500; }
+    button.secondary:hover{ background:rgba(255,255,255,.15); }
+    button.icon-btn { padding: 0 10px; font-size: 16px; }
+
+    .sep { width:1px; height:20px; background:var(--border); margin:0 4px; flex-shrink: 0;}
+    select { cursor: pointer; appearance: none; padding-right: 24px; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 6px center; background-size: 14px; }
+
+    /* 트렌드 바 */
+    #trendBar{ 
+      width:100%; display:none; flex-direction:column; gap:6px; 
+      padding:10px; background:var(--card); border:1px solid var(--border); 
+      border-top:0; border-radius: 0 0 var(--radius) var(--radius);
+      margin-top: 0; margin-bottom: 10px;
+    }
+    #trendBar.visible{ display:flex; }
+    .trend-list{ display:flex; gap:6px; flex-wrap:wrap; max-height:180px; overflow-y:auto; }
+    .t-chip{ background:rgba(255,255,255,.08); border:1px solid var(--border); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:.2s; }
+    .t-chip:hover{ background:var(--accent); border-color:var(--accent); }
+    .t-rank{ color:var(--accent); font-weight:900; }
+
+    #status { text-align:center; padding: 10px 0; color:var(--sub); font-size:12px; min-height: 20px; }
+
+    /* 그리드 레이아웃 */
+    #results.grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); }
+    #results.list{ display:flex; flex-direction:column; gap:0; }
+
+    .center-msg { text-align:center; padding:60px 20px; color:var(--sub); font-size:14px; line-height: 1.6; }
+
+    /* 카드 (그리드 뷰) */
+    .card{ background:var(--card); border-radius:var(--radius); overflow:hidden; cursor:pointer; border:1px solid var(--border); transition:.2s; position:relative; }
+    .card:hover{ transform:translateY(-2px); border-color:var(--sub); }
+    .card.active{ background: rgba(255,255,255,0.08); border-color: var(--border); } 
+
+    .thumb{ position:relative; aspect-ratio:16/9; }
+    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .dur{ position:absolute; right:6px; bottom:6px; background:rgba(0,0,0,.8); padding:2px 4px; border-radius:4px; font-size:10px; font-weight:700; z-index: 5;}
+    .like-btn{ position:absolute; top:6px; left:6px; width:28px; height:28px; background:rgba(0,0,0,.5); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff; z-index:5; transition:.2s; }
+    .like-btn.liked{ background:rgba(255,0,0,.8); }
+    .kebab{ position:absolute; top:6px; right:6px; width:28px; height:28px; background:rgba(0,0,0,.5); border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; z-index:5; font-weight:900; font-size:12px;}
+    .body{ padding:10px; display:grid; gap:2px; }
+    .title{ font-weight:700; font-size:13px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.35; margin-bottom: 2px;}
+    .meta{ font-size:11px; color:var(--sub); display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+    .chip-speed{ background:rgba(255,0,0,0.2); color:#ff453a; padding:1px 5px; border-radius:4px; font-weight:700; font-size:10px; border:1px solid rgba(255,69,58,0.3); }
+
+    /* 유튜브 뮤직 스타일 리스트 */
+    .li { 
+      display:flex; align-items:center; 
+      padding: 8px 12px; 
+      border-bottom:1px solid rgba(255,255,255,0.05); 
+      cursor:pointer; background:transparent; transition: background 0.2s;
+      height: 64px;
+    }
+    .li:hover { background: rgba(255,255,255,0.05); }
+    .li.active { background: rgba(255,255,255,0.1); }
+    .li-thumb { width: 80px; height: 45px; border-radius: 4px; overflow:hidden; flex-shrink: 0; margin-right: 12px; background: #000; position: relative;}
+    .li-thumb img { width:100%; height:100%; object-fit:cover; }
+    .li-body { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap: 2px; }
+    .li-title { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#fff; }
+    .li-meta { font-size:12px; color:var(--sub); display:flex; align-items:center; }
+    .li-actions { margin-left: auto; display:flex; gap: 4px; align-items:center; }
+    .li-btn { width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background:transparent; border:0; color:var(--sub); font-size:16px; border-radius:50%; }
+    .li-btn:hover { background:rgba(255,255,255,0.1); color:#fff; }
+    .li-btn.liked { color: #ff0000; }
+
+    /* [업그레이드] 다이나믹 이퀄라이저 스타일 */
+    .visualizer {
+      display:flex; gap:2px; height:16px; align-items:flex-end;
+      position:absolute; bottom:6px; left:6px;
+      z-index:20; pointer-events:none;
+      padding:2px; border-radius:4px;
+      background: rgba(0,0,0,0.3);
+    }
+    /* 바 5개로 증가 */
+    .v-bar {
+      width:3px; background:#fff; 
+      height:2px; /* 기본 높이 */
+      border-radius:1px;
+      transition: height 0.08s ease; /* 부드럽지만 빠른 전환 */
+    }
+    /* 포인트 컬러 */
+    .v-bar:nth-child(3) { background: var(--accent); } 
+    
+    .li.active .li-thumb img, .card.active .thumb img { opacity: 0.4; transition: opacity 0.3s; }
+
+    /* 하단 미니 플레이어 썸네일 */
+    .mini-thumb { 
+      width: 50px; height: 28px; 
+      border-radius: 4px; overflow: hidden; 
+      position: relative; flex-shrink: 0; margin-right: 12px;
+      background: #000;
+    }
+    .mini-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    
+    /* 미니 플레이어 이퀄라이저 조정 */
+    .mini-thumb .visualizer { 
+      bottom: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.5); 
+      justify-content: center; align-items: center; 
+      gap: 3px; border-radius: 0; padding-bottom: 4px;
+    }
+    
+    /* 토스트 알림 */
+    #toast { 
+      position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); 
+      background:rgba(30,30,30,0.95); color:#fff; padding:10px 20px; 
+      border-radius:30px; font-size:13px; font-weight:600; 
+      opacity:0; pointer-events:none; transition:0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
+      z-index:9999; box-shadow:0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; gap: 8px;
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* 플레이어 확장 */
+    .player-block{ 
+      grid-column: 1 / -1; 
+      background:#000; border-radius:var(--radius); overflow:hidden; margin:8px 0; 
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      animation: slideDown 0.3s ease-out;
+    }
+    @keyframes slideDown { from{opacity:0; transform:translateY(-10px)} to{opacity:1; transform:translateY(0)} }
+    .player-head{ padding:0 12px; display:flex; justify-content:space-between; background:rgba(255,255,255,.08); align-items:center; height: 36px;}
+    .player-frame{ width:100%; height:clamp(300px, 60vw, 70vh); }
+    #playerHost{ width:100%; height:100%; }
+
+    /* 미니 플레이어 */
+    #mini{ position:fixed; bottom:0; left:0; right:0; height:60px; background:rgba(20,20,20,.95); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; flex-direction:column; z-index:1000; transform:translateY(100%); transition:.3s; }
+    #mini.visible{ transform:translateY(0); }
+    
+    .seek{ height:4px; background:rgba(255,255,255,.2); cursor:pointer; width:100%; transition:height 0.1s; }
+    .seek:hover{ height:10px; }
+    .seek-fill{ height:100%; background:var(--yt-red); width:0%; transition: width 0.1s linear; }
+    
+    .mini-row{ flex:1; display:flex; align-items:center; padding:0 12px; gap:0; } 
+    .m-info{ flex:1; min-width:0; cursor:pointer; }
+    .m-title{ font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .m-sub{ font-size:11px; color:var(--sub); }
+    .m-ctrl{ display:flex; gap:4px; align-items:center; }
+    .icon-btn{ background:transparent; border:0; color:#fff; font-size:18px; cursor:pointer; padding:8px; height:auto; }
+
+    /* 유틸 */
+    #menu{ position:fixed; background:rgba(30,30,30,.98); border:1px solid var(--border); border-radius:8px; padding:4px; display:none; z-index:2000; min-width:160px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+    #menu.visible{ display:block; }
+    .menu-item{ padding:8px 12px; color:#fff; cursor:pointer; border-radius:4px; font-size:13px; }
+    .menu-item:hover{ background:rgba(255,255,255,.1); }
+    #menuBg{ position:fixed; inset:0; z-index:1999; display:none; }
+    
+    #backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1100; display:none; }
+    #backdrop.visible{ display:block; }
+    #sheet{ position:fixed; left:0; right:0; bottom:0; height:60vh; background:#1a1a1a; border-radius:16px 16px 0 0; z-index:1200; transform:translateY(100%); transition:.3s; display:flex; flex-direction:column; border-top:1px solid var(--border); }
+    #sheet.open{ transform:translateY(0); }
+    .q-item{ display:flex; gap:10px; padding:10px 16px; border-bottom:1px solid var(--border); align-items:center; cursor:pointer; }
+    .q-item.active{ background:rgba(0,122,255,.15); }
+
+    #loadMore{ width:100%; margin-top:20px; display:none; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <select id="region"><option value="KR">KR</option><option value="US">US</option><option value="JP">JP</option></select>
+    <select id="goal" style="min-width:130px">
+      <option value="trend">트렌드/소재</option>
+      <option value="hit">검증된 대박</option>
+      <option value="ref">레퍼런스</option>
+      <option value="rate">반응좋음</option>
+      <option value="speed">급상승(속도)</option>
+    </select>
+    <select id="dateFilter"><option value="all">전체기간</option><option value="today">오늘</option><option value="week">이번주</option><option value="month">이번달</option></select>
+    <select id="duration"><option value="any">모든길이</option><option value="short">4분↓</option><option value="medium">4~20분</option><option value="long">20분↑</option></select>
+    
+    <div class="sep"></div>
+
+    <input id="keyword" placeholder="검색어를 입력하세요..." onkeypress="if(event.key==='Enter') searchVideos(true)" />
+    
+    <button onclick="searchVideos(true)">검색</button>
+    <button class="secondary" onclick="loadYoutubeTrends(true)">🔥 급상승</button>
+    <button class="secondary icon-btn" onclick="showLikes()" title="보관함">❤️</button>
+    <button class="secondary icon-btn" id="viewBtn" onclick="toggleView()" title="뷰 전환">▦</button>
+    <button class="secondary icon-btn" onclick="setSleepTimer()" title="취침 타이머">💤</button>
+    
+    <div class="sep"></div>
+
+    <div style="font-size:11px;color:var(--sub);cursor:pointer;display:flex;align-items:center;gap:4px" onclick="manageKey()" title="클릭하여 API Key 관리">
+      Q: <b id="quotaVal" style="color:var(--accent)">0</b>
+    </div>
+    <label style="font-size:11px;color:var(--sub);white-space:nowrap;display:flex;align-items:center;gap:4px;cursor:pointer">
+      <input type="checkbox" id="autoPlay"> 자동
+    </label>
+  </header>
+
+  <div id="trendBar">
+    <div style="display:flex;justify-content:space-between;color:var(--sub);font-size:11px;margin-bottom:6px">
+      <span>🔥 실시간 인기 동영상 (API Direct)</span>
+      <div><span id="trendTime" style="margin-right:6px"></span><button style="font-size:11px;padding:2px 6px;height:auto;background:transparent;color:var(--sub);border:1px solid var(--border)" onclick="closeTrendBar()">닫기</button></div>
+    </div>
+    <div class="trend-list" id="trendList"></div>
+  </div>
+
+  <div id="status">
+    검색어를 입력하고 <b>[검색]</b>을 누르세요. API Key가 없으면 입력창이 뜹니다.
+  </div>
+  
+  <div id="results" class="grid"></div>
+  <button id="loadMore" class="secondary" onclick="searchVideos(false)">더 보기</button>
+</div>
+
+<div id="mini">
+  <div class="seek" id="seek" onclick="seekVideo(event)"><div class="seek-fill" id="seekFill"></div></div>
+  <div class="mini-row">
+    <div class="mini-thumb" id="miniThumb" onclick="goToPlayback()"></div>
+
+    <div class="m-info" onclick="goToPlayback()">
+      <div class="m-title" id="mTitle">재생 중인 영상 없음</div>
+      <div class="m-sub" id="mSub">-</div>
+    </div>
+    <div class="m-ctrl">
+      <button class="icon-btn" onclick="toggleLoop()" id="loopBtn" style="font-size:14px;color:var(--sub)" title="반복 재생">🔁</button>
+      <button class="icon-btn" onclick="toggleShuffle()" id="shuffleBtn" title="셔플" style="font-size:14px;color:var(--sub)">🔀</button>
+      <button class="icon-btn" onclick="openQueue()">≣</button>
+      <button class="icon-btn" onclick="prev()">⏮</button>
+      <button class="icon-btn" onclick="togglePlay()" id="playBtn">▶</button>
+      <button class="icon-btn" onclick="next()">⏭</button>
+      <button class="icon-btn" onclick="closePlayer()">✕</button>
+    </div>
+  </div>
+</div>
+
+<div id="backdrop" onclick="closeQueue()"></div>
+<div id="sheet">
+  <div style="padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-weight:700;font-size:14px;margin-left:4px">재생 대기열</span>
+    <button class="secondary" onclick="closeQueue()" style="height:28px;font-size:12px">닫기</button>
+  </div>
+  <div style="flex:1;overflow-y:auto" id="qBody"></div>
+</div>
+
+<div id="menuBg" onclick="closeMenu()"></div>
+<div id="menu">
+  <div class="menu-item" onclick="menuAction('addQueue')">➕ 대기열 추가</div>
+  <div class="menu-item" onclick="menuAction('playNext')">⏭ 다음 재생</div>
+  <div class="menu-item" onclick="menuAction('hideVideo')">🚫 영상 숨김</div>
+  <div class="menu-item" onclick="menuAction('hideChannel')">🚫 채널 차단</div>
+  <div class="menu-item" onclick="menuAction('copyUrl')">🔗 링크 복사</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  window.onerror = function(m){ showToast("오류: "+m); return false; };
+  window.addEventListener('load', ()=>{
+    const k = localStorage.getItem('yt_api_key_lite');
+    if(k) { API_KEY=k; $('status').innerText = ""; }
+  });
+
+  const $=(id)=>document.getElementById(id);
+  const escapeHtml=(t)=>(t||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const fmtNum=(n)=>{n=Number(n);return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n;};
+  const parseDuration=(d)=>{if(!d)return 0;const m=d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);if(!m)return 0;return (parseInt(m[1]||0)*3600)+(parseInt(m[2]||0)*60)+parseInt(m[3]||0);};
+  const fmtDur=(s)=>{s=Math.max(0,s|0);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),z=s%60;const p=n=>String(n).padStart(2,'0');return h>0?`${h}:${p(m)}:${p(z)}`:`${m}:${p(z)}`;};
+
+  let API_KEY="", quotaUsed=Number(localStorage.getItem('yt_quota_used'))||0;
+  $('quotaVal').innerText = quotaUsed.toLocaleString();
+  let currentData=[], queue=[], queueIndex=-1, nextPageToken=null, currentQuery={}, viewMode='grid', myLikes=new Map(), player=null, menuTargetIdx=-1;
+  let blockedVideos=new Set(JSON.parse(localStorage.getItem('yt_block_v')||'[]'));
+  let blockedChannels=new Set(JSON.parse(localStorage.getItem('yt_block_c')||'[]'));
+  let loopMode = 0; 
+  let isShuffle = false;
+  let sleepTimerId = null;
+  
+  // [NEW] 비주얼라이저용 애니메이션 ID
+  let vizAnimId = null;
+
+  try{const l=localStorage.getItem('yt_my_likes');if(l)JSON.parse(l).forEach(v=>myLikes.set(v.id,v));}catch(e){}
+
+  function showToast(msg) {
+    const t = $('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    if(t.timer) clearTimeout(t.timer);
+    t.timer = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  function checkKey() {
+    if(API_KEY) return true;
+    const input = prompt("YouTube Data API Key를 입력해주세요:\n(입력된 키는 브라우저에만 저장됩니다)");
+    if(input && input.trim()) {
+      API_KEY = input.trim();
+      localStorage.setItem('yt_api_key_lite', API_KEY);
+      showToast("✅ API Key가 저장되었습니다.");
+      return true;
+    }
+    return false;
+  }
+  function manageKey() {
+    const act = prompt("API Key 관리\n\n1. 키 수정/입력\n2. 할당량(Quota) 초기화\n3. 취소", "1");
+    if(act === '1') {
+      const k = prompt("새 API Key 입력:", API_KEY);
+      if(k!==null) { API_KEY=k.trim(); localStorage.setItem('yt_api_key_lite', API_KEY); showToast("저장됨"); }
+    } else if(act === '2') {
+      quotaUsed=0; localStorage.setItem('yt_quota_used',0); updateQuotaUI(); showToast("초기화됨");
+    }
+  }
+  function addQuota(n){ quotaUsed+=n; localStorage.setItem('yt_quota_used',quotaUsed); updateQuotaUI(); }
+  function updateQuotaUI(){ $('quotaVal').innerText=quotaUsed.toLocaleString(); }
+
+  async function fetchJson(url){
+    const res = await fetch(url);
+    if(res.status===403){
+      const e=await res.json().catch(()=>({}));
+      if((e.error?.message||"").toLowerCase().includes("quota")) showToast("🚨 할당량 초과!");
+      else showToast("⛔ 권한 오류 (403)");
+      throw new Error("403");
+    }
+    const j=await res.json(); if(j.error)throw new Error(j.error.message); return j;
+  }
+
+  async function searchVideos(isNew, autoPlayFirst=false){
+    if(!checkKey()) return; 
+    
+    let q=$('keyword').value.trim();
+    if(isNew && !q && currentQuery.mode!=='trends') return showToast("검색어를 입력하세요.");
+
+    if(isNew){ currentQuery={q,mode:'search'}; nextPageToken=null; currentData=[]; $('results').innerHTML=""; $('status').innerText="검색 중..."; closePlayer(); }
+    else if(!nextPageToken) return;
+
+    try{
+      let url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&key=${encodeURIComponent(API_KEY)}`;
+      if(q) url+=`&q=${encodeURIComponent(q)}`;
+      url+=`&regionCode=${$('region').value}`;
+      
+      const goal=$('goal').value;
+      let order = 'relevance';
+      if(goal==='trend'||goal==='speed') order='date'; else if(goal==='hit') order='viewCount'; else if(goal==='rate') order='rating';
+      url+=`&order=${order}`;
+      
+      const df=$('dateFilter').value;
+      if(df!=='all'){const d=new Date();if(df==='today')d.setDate(d.getDate()-1);if(df==='week')d.setDate(d.getDate()-7);if(df==='month')d.setMonth(d.getMonth()-1);url+=`&publishedAfter=${d.toISOString()}`;}
+      
+      const dur=$('duration').value;
+      if(dur!=='any')url+=`&videoDuration=${dur}`;
+      if(nextPageToken)url+=`&pageToken=${nextPageToken}`;
+
+      const data=await fetchJson(url); addQuota(100); nextPageToken=data.nextPageToken;
+      const items=data.items||[];
+      if(isNew && !items.length){ $('results').innerHTML='<div class="center-msg">결과 없음</div>'; $('status').innerText=""; return; }
+
+      const ids=items.map(x=>x.id.videoId).join(',');
+      const detData=await fetchJson(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics,snippet&id=${ids}&key=${encodeURIComponent(API_KEY)}`);
+      addQuota(1);
+
+      let newItems=detData.items.map(i=>{
+        const pub = new Date(i.snippet.publishedAt);
+        const hours = Math.max(0.1, (new Date() - pub) / 36e5);
+        const vph = Number(i.statistics.viewCount||0) / hours;
+        return {
+          id:i.id, title:i.snippet.title, channelTitle:i.snippet.channelTitle, channelId:i.snippet.channelId,
+          thumb:i.snippet.thumbnails.medium?.url||i.snippet.thumbnails.default?.url,
+          duration:parseDuration(i.contentDetails.duration), viewCount:Number(i.statistics.viewCount), vph:vph
+        };
+      }).filter(i=>!blockedVideos.has(i.id)&&!blockedChannels.has(i.channelId));
+
+      if(goal==='speed') newItems.sort((a,b)=>b.vph-a.vph);
+
+      currentData=[...currentData,...newItems];
+      if(isNew){ queue=[...newItems]; queueIndex=-1; } else { queue=[...queue,...newItems]; }
+      
+      renderResults(newItems, isNew);
+      $('status').innerText=`${currentData.length}개 로드됨`;
+      $('loadMore').style.display=nextPageToken?'block':'none';
+      if(isNew && autoPlayFirst && currentData.length>0) setTimeout(()=>playVideo(0),500);
+
+    }catch(e){ console.error(e); $('status').innerText="오류: "+e.message; }
+  }
+
+  async function loadYoutubeTrends(force){
+    if(!checkKey()) return;
+    const bar=$('trendBar'), list=$('trendList');
+    if(bar.classList.contains('visible') && !force) return;
+    bar.style.display='flex'; setTimeout(()=>bar.classList.add('visible'),10);
+    list.innerHTML='<div style="padding:10px;color:#888;font-size:12px">로딩...</div>';
+
+    try{
+      const r=$('region').value;
+      const data=await fetchJson(`https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=${r}&maxResults=15&key=${encodeURIComponent(API_KEY)}`);
+      addQuota(1);
+      let h='';
+      data.items.forEach((i,x)=>{
+        const t=escapeHtml(i.snippet.title), safeT=t.replace(/'/g,"\\'");
+        h+=`<div class="t-chip" onclick="setTrendAndSearch('${safeT}')"><span class="t-rank">${x+1}</span><span class="t-text" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t}</span></div>`;
+      });
+      list.innerHTML=h; $('trendTime').innerText=new Date().toLocaleTimeString();
+    }catch(e){ list.innerHTML=`<div style="padding:10px;color:var(--warn)">실패: ${e.message}</div>`; }
+  }
+  function setTrendAndSearch(k){ $('keyword').value = k; searchVideos(true, true); }
+  function closeTrendBar(){ $('trendBar').classList.remove('visible'); setTimeout(()=>$('trendBar').style.display='none',300); }
+
+  function renderResults(items, isNew){
+    const c=$('results'); if(isNew)c.innerHTML='';
+    const startIdx=currentData.length-items.length;
+    const goal=$('goal').value;
+
+    let h='';
+    items.forEach((v,i)=>{
+      const gIdx=startIdx+i, liked=myLikes.has(v.id)?'liked':'', d=fmtDur(v.duration);
+      let sp = (goal==='speed' && v.vph>0) ? `<span class="chip-speed">🚀 ${(v.vph>=1000?(v.vph/1000).toFixed(1)+'K':Math.round(v.vph))}/h</span>` : '';
+      
+      if(viewMode === 'grid') {
+        const inner=`
+          <div class="thumb">
+            <img src="${v.thumb}">
+            <div class="dur">${d}</div>
+            <div class="like-btn ${liked}" onclick="toggleLike(event,'${v.id}',${gIdx})">♥</div>
+            <div class="kebab" onclick="openMenu(event,${gIdx})">⋮</div>
+          </div>
+          <div class="body">
+            <div class="title">${escapeHtml(v.title)}</div>
+            <div class="meta">${sp} <span>${escapeHtml(v.channelTitle)}</span> • <span>${fmtNum(v.viewCount)}회</span></div>
+          </div>`;
+        h+= `<div class="card" id="c-${gIdx}" onclick="playVideo(${gIdx})">${inner}</div>`;
+      } else {
+        h+= `
+        <div class="li" id="c-${gIdx}" onclick="playVideo(${gIdx})">
+          <div class="li-thumb"><img src="${v.thumb}"></div>
+          <div class="li-body">
+            <div class="li-title">${escapeHtml(v.title)}</div>
+            <div class="li-meta">${sp} ${escapeHtml(v.channelTitle)} • ${fmtNum(v.viewCount)}</div>
+          </div>
+          <div class="li-actions">
+            <button class="li-btn ${liked}" onclick="toggleLike(event,'${v.id}',${gIdx})">♥</button>
+            <button class="li-btn" onclick="openMenu(event,${gIdx})">⋮</button>
+          </div>
+        </div>`;
+      }
+    });
+    c.insertAdjacentHTML('beforeend',h);
+  }
+  
+  function toggleView(){ 
+    viewMode=viewMode==='grid'?'list':'grid'; 
+    $('results').className=viewMode; 
+    if(currentData.length){ 
+      $('results').innerHTML=''; 
+      renderResults(currentData,false); 
+      // 뷰 전환 시 이퀄라이저 복구
+      if(queueIndex >= 0) {
+        setTimeout(() => {
+          attachVisualizer(queueIndex);
+          const card=$('c-'+queueIndex); 
+          if(card) card.classList.add('active');
+          if(player) goToPlayback(); 
+        }, 50);
+      }
+    } 
+  }
+
+  const tag=document.createElement('script'); tag.src="https://www.youtube.com/iframe_api"; document.head.appendChild(tag);
+  
+  function playVideo(idx){
+    if(idx<0||idx>=queue.length) return;
+    queueIndex=idx; const v=queue[idx];
+    $('mTitle').innerText=v.title; $('mSub').innerText=v.channelTitle; $('mini').classList.add('visible'); $('playBtn').innerText='⏸';
+    document.querySelectorAll('.active').forEach(e=>e.classList.remove('active'));
+    
+    // [업데이트] 미니 플레이어 썸네일 & 이퀄라이저
+    const mt = $('miniThumb');
+    mt.innerHTML = `
+      <img src="${v.thumb}">
+      <div class="visualizer" id="viz-mini">
+        <div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div>
+      </div>
+    `;
+
+    attachVisualizer(idx);
+
+    const card=$('c-'+idx); if(card) card.classList.add('active');
+
+    const ex=$('playerBlock'); if(ex) ex.remove();
+    const pb=document.createElement('div'); pb.id='playerBlock'; pb.className='player-block';
+    pb.innerHTML=`<div class="player-head"><span style="color:#fff;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%">▶ ${escapeHtml(v.title)}</span><button onclick="closePlayer()" style="background:transparent;border:0;color:#fff;font-size:18px">✕</button></div><div class="player-frame"><div id="playerHost"></div></div>`;
+    
+    const con=$('results');
+    if(viewMode==='list' && card && card.parentNode===con) card.insertAdjacentElement('afterend',pb);
+    else if(viewMode==='grid' && card && card.parentNode===con){
+      const w=card.offsetWidth, cw=con.offsetWidth, cols=Math.floor((cw+12)/(w+12))||1;
+      const rowEnd=Math.ceil((idx+1)/cols)*cols-1, anchor=$('c-'+Math.min(rowEnd,currentData.length-1));
+      if(anchor) anchor.insertAdjacentElement('afterend',pb); else con.prepend(pb);
+    } else con.prepend(pb);
+
+    setTimeout(()=>pb.scrollIntoView({behavior:'smooth',block:'center'}),100);
+    
+    if(player){ player.destroy(); player=null; }
+    player=new YT.Player('playerHost',{
+      videoId:v.id,
+      playerVars:{'autoplay':1,'playsinline':1},
+      events:{'onStateChange':onStateChange}
+    });
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: v.title,
+        artist: v.channelTitle,
+        artwork: [{ src: v.thumb, sizes: '512x512', type: 'image/jpeg' }]
+      });
+      navigator.mediaSession.setActionHandler('play', togglePlay);
+      navigator.mediaSession.setActionHandler('pause', togglePlay);
+      navigator.mediaSession.setActionHandler('previoustrack', prev);
+      navigator.mediaSession.setActionHandler('nexttrack', next);
+    }
+  }
+
+  // [NEW] 자바스크립트 기반 동적 비주얼라이저
+  function attachVisualizer(idx){
+    // 기존 것 삭제
+    document.querySelectorAll('.visualizer').forEach(e => {
+        if(e.id !== 'viz-mini') e.remove(); // 미니플레이어는 유지
+    });
+
+    const target = $('c-'+idx);
+    if(!target) return;
+    
+    const thumbBox = target.querySelector('.li-thumb') || target.querySelector('.thumb');
+    if(thumbBox){
+      // ID 부여하여 식별
+      thumbBox.insertAdjacentHTML('beforeend', `
+        <div class="visualizer" id="viz-main">
+          <div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div>
+        </div>
+      `);
+    }
+  }
+
+  // [NEW] 비주얼라이저 루프 (실제 오디오 데이터는 CORS로 불가하므로 시뮬레이션)
+  function startVisualizerLoop() {
+    if(vizAnimId) cancelAnimationFrame(vizAnimId);
+    
+    function loop() {
+      // 메인 및 미니 플레이어의 모든 바를 찾음
+      const bars = document.querySelectorAll('.v-bar');
+      bars.forEach(bar => {
+        // 랜덤한 높이 (20% ~ 100%)
+        const h = Math.floor(Math.random() * 80) + 20;
+        bar.style.height = h + '%';
+      });
+      
+      // 약간의 딜레이를 주어 너무 정신없지 않게 (setTimeout 대신 requestAnimationFrame 활용)
+      setTimeout(() => {
+        if(player && player.getPlayerState() === 1) {
+            vizAnimId = requestAnimationFrame(loop);
+        }
+      }, 70); // 0.07초마다 갱신
+    }
+    loop();
+  }
+
+  function stopVisualizerLoop() {
+    if(vizAnimId) cancelAnimationFrame(vizAnimId);
+    document.querySelectorAll('.v-bar').forEach(b => b.style.height = '2px'); // 정지 시 최소 높이로
+  }
+
+  function onStateChange(e){ 
+    if(e.data===1){ 
+      $('playBtn').innerText='⏸'; startTi(); startVisualizerLoop();
+    } else {
+      $('playBtn').innerText='▶'; stopTi(); stopVisualizerLoop();
+    } 
+    
+    if(e.data===0) { 
+      if(loopMode === 2) {
+        player.playVideo(); 
+      } else if (loopMode === 1 && queueIndex === queue.length - 1) {
+        playVideo(0); 
+      } else {
+        next(); 
+      }
+    }
+  }
+
+  function closePlayer(){ 
+    if(player){player.destroy();player=null;} 
+    const p=$('playerBlock'); if(p)p.remove(); 
+    $('mini').classList.remove('visible'); 
+    stopTi(); stopVisualizerLoop();
+    document.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); 
+    document.querySelectorAll('.visualizer').forEach(e => {
+        if(e.id !== 'viz-mini') e.remove(); 
+    });
+  }
+  
+  function togglePlay(){ if(player) player.getPlayerState()===1?player.pauseVideo():player.playVideo(); }
+  function next(){ 
+    if(queue.length <= 1) return;
+    let nextIdx;
+    if(isShuffle){
+      do { nextIdx = Math.floor(Math.random() * queue.length); } while (nextIdx === queueIndex);
+    } else {
+      nextIdx = queueIndex + 1;
+    }
+    if(nextIdx < queue.length) playVideo(nextIdx); 
+  }
+  function prev(){ if(queueIndex>0)playVideo(queueIndex-1); }
+  function goToPlayback(){ const p=$('playerBlock'); if(p)p.scrollIntoView({behavior:'smooth',block:'center'}); }
+  
+  let timer=null;
+  function startTi(){ if(timer)clearInterval(timer); timer=setInterval(()=>{ if(player&&player.getCurrentTime){ $('seekFill').style.width=(player.getCurrentTime()/player.getDuration()*100)+'%'; } },500); }
+  function stopTi(){ if(timer)clearInterval(timer); }
+
+  function seekVideo(e) {
+    if(!player || !player.getDuration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const ratio = x / rect.width;
+    const newTime = player.getDuration() * ratio;
+    player.seekTo(newTime, true);
+    $('seekFill').style.width = (ratio * 100) + '%';
+  }
+
+  function toggleLoop(){
+    loopMode = (loopMode + 1) % 3;
+    const btn = $('loopBtn');
+    if(loopMode === 0) { btn.innerText = '🔁'; btn.style.color = 'var(--sub)'; showToast("반복 없음"); } 
+    else if(loopMode === 1) { btn.innerText = '🔁'; btn.style.color = 'var(--accent)'; showToast("전체 반복"); } 
+    else { btn.innerText = '🔂'; btn.style.color = 'var(--accent)'; showToast("한 곡 반복"); } 
+  }
+
+  function toggleShuffle() {
+    isShuffle = !isShuffle;
+    const btn = $('shuffleBtn');
+    if(isShuffle) { btn.style.color = 'var(--accent)'; showToast("🔀 셔플 켜짐"); } 
+    else { btn.style.color = 'var(--sub)'; showToast("➡️ 순차 재생"); }
+  }
+
+  function setSleepTimer() {
+    const min = prompt("몇 분 뒤에 종료할까요?\n(0을 입력하면 취소됩니다)", "30");
+    if(min === null) return;
+    const m = parseInt(min);
+    if(sleepTimerId) clearTimeout(sleepTimerId);
+    if(m > 0) {
+      showToast(`💤 ${m}분 뒤에 종료됩니다.`);
+      sleepTimerId = setTimeout(() => {
+        if(player) player.pauseVideo();
+        showToast("💤 타이머 종료");
+        sleepTimerId = null;
+      }, m * 60 * 1000);
+    } else { showToast("타이머 취소됨"); }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if(document.activeElement.tagName === 'INPUT') return;
+    switch(e.code) {
+      case 'Space': case 'KeyK': e.preventDefault(); togglePlay(); break;
+      case 'ArrowLeft': if(player) player.seekTo(player.getCurrentTime() - 5); break;
+      case 'ArrowRight': if(player) player.seekTo(player.getCurrentTime() + 5); break;
+      case 'KeyM': 
+        if(player) {
+          if(player.isMuted()) { player.unMute(); showToast("🔊 음소거 해제"); }
+          else { player.mute(); showToast("🔇 음소거"); }
+        }
+        break;
+    }
+  });
+
+  function openQueue(){ $('backdrop').classList.add('visible'); $('sheet').classList.add('open'); renderQueue(); }
+  function closeQueue(){ $('backdrop').classList.remove('visible'); $('sheet').classList.remove('open'); }
+  function renderQueue(){
+    const b=$('qBody'); b.innerHTML='';
+    if(!queue.length) { b.innerHTML='<div class="center-msg" style="padding:20px">대기열이 비었습니다.</div>'; return; }
+    let h='';
+    queue.forEach((v,i)=>{
+      h+=`<div class="q-item ${i===queueIndex?'active':''}" onclick="playVideo(${i});closeQueue()">
+        <img src="${v.thumb}" style="width:50px;height:28px;object-fit:cover;border-radius:4px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(v.title)}</div>
+          <div style="font-size:11px;color:var(--sub)">${escapeHtml(v.channelTitle)}</div>
+        </div>
+      </div>`;
+    });
+    b.innerHTML=h;
+  }
+
+  function openMenu(e,i){ e.stopPropagation(); menuTargetIdx=i; const m=$('menu'); m.style.left=(e.clientX-160)+'px'; m.style.top=e.clientY+'px'; $('menuBg').style.display='block'; m.classList.add('visible'); }
+  function closeMenu(){ $('menuBg').style.display='none'; $('menu').classList.remove('visible'); }
+  function menuAction(a){
+    const v=currentData[menuTargetIdx]; if(!v)return;
+    if(a==='addQueue'){ queue.push(v); showToast("➕ 대기열에 추가됨"); }
+    if(a==='playNext'){ queue.splice(queueIndex+1,0,v); showToast("⏭ 다음 재생 예약됨"); }
+    if(a==='hideVideo'){ blockedVideos.add(v.id); localStorage.setItem('yt_block_v',JSON.stringify([...blockedVideos])); showToast("🚫 영상 숨김 처리됨"); }
+    if(a==='hideChannel'){ blockedChannels.add(v.channelId); localStorage.setItem('yt_block_c',JSON.stringify([...blockedChannels])); showToast("🚫 채널 차단됨"); }
+    if(a==='copyUrl'){ navigator.clipboard.writeText(`https://youtu.be/${v.id}`); showToast("🔗 링크 복사완료"); }
+    closeMenu();
+  }
+  function showLikes(){ currentData=[...myLikes.values()]; queue=[...currentData]; $('results').innerHTML=''; renderResults(currentData,false); $('status').innerText=`보관함 ${currentData.length}`; $('loadMore').style.display='none'; closePlayer(); }
+  function toggleLike(e,id,i){ e.stopPropagation(); const b=e.currentTarget; if(myLikes.has(id)){myLikes.delete(id);b.classList.remove('liked');}else{const v=currentData.find(x=>x.id===id);if(v){myLikes.set(id,v);b.classList.add('liked');}} localStorage.setItem('yt_my_likes',JSON.stringify([...myLikes.values()])); }
+</script>
+</body>
+</html>
