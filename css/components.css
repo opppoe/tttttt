@@ -1723,17 +1723,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* 가운데 정렬 */
             gap: 8px;
-            /* 버튼 사이 간격 */
             margin-top: 16px;
             padding-top: 16px;
             border-top: 1px solid rgba(255, 255, 255, 0.15);
-            flex-wrap: nowrap;
-            /* 줄바꿈 방지 (한 줄 강제) */
-            overflow-x: auto;
-            /* 화면 좁으면 가로 스크롤 */
-            white-space: nowrap;
+            flex-wrap: wrap; /* 여러 줄로 자연스럽게 배치되게 수정 */
+            white-space: normal;
         }
 
         .cat-footer-row {
