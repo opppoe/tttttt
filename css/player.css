@@ -8,10 +8,11 @@
             height: 100vh;
             z-index: 1500;
             pointer-events: none;
-            background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             opacity: 0;
+            will-change: opacity;
 
             /* 🎯 [여기 수정됨] 복귀할 때는 0초! (즉시 사라져서 깜박임 원천 차단) */
             transition: opacity 0s;
@@ -88,9 +89,10 @@
         .player-block {
             grid-column: 1 / -1;
             width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            will-change: transform, opacity;
             border-radius: 24px;
             overflow: hidden;
             margin: 16px 0;

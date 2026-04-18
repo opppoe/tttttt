@@ -94,17 +94,22 @@
             box-sizing: border-box !important;
 
             border-radius: 0 !important;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-            background: rgba(0, 0, 0, 0.15) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important; /* 그림자 최적화 */
+            background: rgba(15, 15, 15, 0.75) !important; /* 배경 투명도 조정으로 가독성 보완 */
             border: none !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 
-            backdrop-filter: blur(20px) saturate(150%) !important;
-            -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+            /* 성능을 위해 블러 강도를 낮춤 (20px -> 10px) */
+            backdrop-filter: blur(10px) saturate(120%) !important;
+            -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+
+            /* GPU 가속 힌트 추가 */
+            will-change: transform;
+            transform: translateZ(0);
 
             display: flex;
             align-items: center;
-            flex-wrap: wrap; /* 요소들이 짤리지 않고 다음 줄로(세로로) 넘어가게 */
+            flex-wrap: wrap; 
             gap: 10px;
             z-index: 1000;
             white-space: normal;

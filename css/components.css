@@ -1,9 +1,10 @@
         /* 팝업 메뉴 공통 */
         .popup-menu {
             position: fixed;
-            background: rgba(30, 30, 30, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            will-change: transform, opacity;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
             padding: 12px;
@@ -136,9 +137,10 @@
             position: fixed;
             top: 70px;
             right: 20px;
-            background: rgba(30, 30, 30, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(40, 40, 40, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            will-change: transform;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
             padding: 8px;
@@ -235,8 +237,8 @@
         #suggestBox {
             position: fixed;
             background: rgba(30, 30, 30, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
             z-index: 5000;
@@ -518,7 +520,7 @@
         }
 
         #trendBar>* {
-            pointer-events: auto;
+            pointer-events: none;
         }
 
 
@@ -1356,8 +1358,9 @@
         #menu {
             position: fixed;
             background: rgba(30, 30, 30, 0.95);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            will-change: transform, opacity;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
             padding: 6px;

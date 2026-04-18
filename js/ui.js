@@ -52,17 +52,10 @@ const catData = [
 
 
 function initParticles() {
-    const c = $('particles');
-    for (let i = 0; i < 15; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        p.style.left = Math.random() * 100 + '%';
-        p.style.top = Math.random() * 100 + '%';
-        p.style.width = p.style.height = (Math.random() * 4 + 2) + 'px';
-        p.style.animationDuration = (Math.random() * 20 + 10) + 's';
-        p.style.animationDelay = (Math.random() * 5) + 's';
-        c.appendChild(p);
-    }
+    // [성능 최적화] 맥 크롬에서의 버벅임을 방지하기 위해 입자 생성을 중단합니다.
+    // CSS에서 이미 display: none 처리가 되어 있으므로 JS에서도 생성을 막아 리소스를 절약합니다.
+    console.log("🚀 성능 최적화: 입자 시스템 비활성화됨");
+    return;
 }
 
 function handleThemeChange(input) {
