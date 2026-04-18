@@ -222,6 +222,7 @@ function toggleCatMenu(e, btn) {
 
         m.style.top = (btnRect.bottom + 12) + 'px';
         m.style.left = leftPos + 'px';
+        m.style.setProperty('--cat-width', `${menuWidth}px`);
 
         // 화살표 위치 계산 (아이콘 밑에 정확히 오도록)
         const originX = (targetRect.left + targetRect.width / 2) - leftPos;

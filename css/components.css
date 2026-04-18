@@ -1693,11 +1693,9 @@
         #catMenu {
             display: block !important;
             padding: 12px !important;
-            width: 100% !important;
-            max-width: 420px !important;
-            max-height: 75vh !important; /* 화면 가득 차지 않게 */
-            overflow-y: auto !important; /* 내용 길면 세로 스크롤 */
-            overflow-x: hidden !important;
+            width: var(--cat-width, 420px) !important;
+            max-width: calc(100vw - 20px) !important;
+            overflow: visible !important; /* 팝업 꼬리표(화살표) 영역 보호 */
         }
 
         .cat-grid-scroller {
@@ -1705,6 +1703,9 @@
             grid-template-columns: repeat(4, 1fr) !important; /* 4칸 배치로 모바일 최적화 */
             gap: 8px;
             padding: 4px;
+            max-height: 75vh !important; /* 화면 가득 차지 않게 안쪽 요소에 스크롤 */
+            overflow-y: auto !important; /* 세로 스크롤 허용 */
+            overflow-x: hidden !important;
         }
 
         .cat-grid-scroller::-webkit-scrollbar {
