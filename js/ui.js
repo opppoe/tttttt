@@ -207,8 +207,8 @@ function toggleCatMenu(e, btn) {
         const iconEl = btn.querySelector('svg');
         const targetRect = iconEl ? iconEl.getBoundingClientRect() : btnRect;
 
-        // [핵심 변경] CSS width와 동일하게 740으로 설정
-        const menuWidth = 740;
+        // [핵심 변경] CSS width와 동일하게 동적 설정 (모바일 최적화)
+        const menuWidth = Math.min(420, window.innerWidth - 20);
 
         // 메뉴창 배치 (버튼 왼쪽 라인 기준)
         let leftPos = btnRect.left;

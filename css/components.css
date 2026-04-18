@@ -1689,22 +1689,21 @@
             border-radius: 12px !important;
         }
 
-        /* 카테고리 메뉴 확장 */
+        /* 카테고리 메뉴 확장 (모바일 지원 버전) */
         #catMenu {
             display: block !important;
             padding: 12px !important;
-            width: 740px !important;
-            max-width: 95vw;
-            max-height: none !important;
-            overflow: visible !important;
+            width: 100% !important;
+            max-width: 420px !important;
+            max-height: 75vh !important; /* 화면 가득 차지 않게 */
+            overflow-y: auto !important; /* 내용 길면 세로 스크롤 */
+            overflow-x: hidden !important;
         }
 
         .cat-grid-scroller {
             display: grid;
-            grid-template-columns: repeat(8, 1fr) !important;
+            grid-template-columns: repeat(4, 1fr) !important; /* 4칸 배치로 모바일 최적화 */
             gap: 8px;
-            max-height: none !important;
-            overflow: visible !important;
             padding: 4px;
         }
 
