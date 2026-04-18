@@ -111,7 +111,8 @@
             -webkit-app-region: drag;
         }
 
-        header::-webkit-scrollbar {
+        header::-webkit-scrollbar,
+        .header-row::-webkit-scrollbar {
             display: none;
         }
 

@@ -63,101 +63,84 @@
     <header>
 
         <input type="hidden" id="region" value="KR">
-
-        <button class="custom-trigger" id="catTrigger" onclick="toggleCatMenu(event, this)" style="min-width: 150px;">
-            <div style="display:flex;align-items:center;gap:8px;pointer-events:none;">
-                <svg id="curCatIcon" viewBox="0 0 24 24">
-                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                </svg>
-                <span id="curCatText">음악 (Music)</span>
-            </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"
-                style="pointer-events:none; margin-left: auto;">
-                <path d="M7 10l5 5 5-5z" />
-            </svg>
-        </button>
-
-        <button class="custom-trigger" id="goalTrigger" onclick="toggleCommonMenu(event, 'goal', this)"
-            style="min-width: 120px;">
-            <svg viewBox="0 0 24 24">
-                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-            </svg>
-            <span id="goalText">관련성</span>
-        </button>
         <input type="hidden" id="goal" value="ref">
-
-        <button class="custom-trigger" id="durationTrigger" onclick="toggleCommonMenu(event, 'duration', this)"
-            style="min-width: 110px;">
-            <svg viewBox="0 0 24 24">
-                <path
-                    d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
-            </svg>
-            <span id="durText">전체 길이</span>
-        </button>
         <input type="hidden" id="duration" value="any">
-        <div class="sep"></div>
-        <label class="radio-label" title="고음질 필터 적용">
-            <input type="checkbox" id="hqMode" class="radio-chk"> <span>✨ HQ</span>
-        </label>
 
-        <div class="sep"></div>
-        <div id="searchBox" style="position:relative; flex:1; display:flex; align-items:center;">
-            <input id="keyword" placeholder="검색어 입력..." onkeydown="handleSearchKeydown(event)"
-                oninput="handleInput(this)" onfocus="handleFocus(this)"
-                onblur="setTimeout(()=>$('suggestBox').classList.remove('visible'), 250)"
-                style="width:100%; padding-right: 40px;" /> <button onclick="clearSearch()" class="close-icon"
-                title="검색어 지우기">✕</button>
+        <!-- 1번째 줄: 카테고리 + 검색창 -->
+        <div class="header-row top-row" style="display:flex; width:100%; gap:10px; align-items:center;">
+            <button class="custom-trigger" id="catTrigger" onclick="toggleCatMenu(event, this)" style="min-width: 140px; flex-shrink: 0;">
+                <div style="display:flex;align-items:center;gap:8px;pointer-events:none;">
+                    <svg id="curCatIcon" viewBox="0 0 24 24">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                    </svg>
+                    <span id="curCatText">음악 (Music)</span>
+                </div>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="pointer-events:none; margin-left: auto;">
+                    <path d="M7 10l5 5 5-5z" />
+                </svg>
+            </button>
+
+            <div id="searchBox" style="position:relative; flex:1; display:flex; align-items:center;">
+                <input id="keyword" placeholder="검색어 입력..." onkeydown="handleSearchKeydown(event)"
+                    oninput="handleInput(this)" onfocus="handleFocus(this)"
+                    onblur="setTimeout(()=>$('suggestBox').classList.remove('visible'), 250)"
+                    style="width:100%; padding-right: 40px;" /> 
+                <button onclick="clearSearch()" class="close-icon" title="검색어 지우기">✕</button>
+            </div>
         </div>
 
-        <button class="icon-btn" onclick="searchVideos(true)" title="검색">
-            <svg class="btn-svg" viewBox="0 0 24 24">
-                <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-            </svg>
-        </button>
-        <button class="icon-btn refresh-btn" onclick="searchVideos(true, false, true)" title="새로고침">
-            <svg class="btn-svg" viewBox="0 0 367.136 367.136" fill="none" stroke="currentColor" stroke-width="0.7"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M336.554,86.871c-11.975-18.584-27.145-34.707-44.706-47.731L330.801,0H217.436v113.91L270.4,60.691
-            c40.142,28.131,65.042,74.724,65.042,124.571c0,83.744-68.13,151.874-151.874,151.874S31.694,269.005,31.694,185.262
-            c0-58.641,32.781-111.009,85.551-136.669l-13.119-26.979C73.885,36.318,48.315,59.1,30.182,87.494
-            c-18.637,29.184-28.488,62.991-28.488,97.768c0,100.286,81.588,181.874,181.874,181.874s181.874-81.588,181.874-181.874
-            C365.442,150.223,355.453,116.201,336.554,86.871z" />
-            </svg>
-        </button>
-
-
-        <div class="sep"></div>
-
-        <button class="icon-btn" onclick="toggleHeaderMenu()" title="설정 메뉴">
-            <svg class="btn-svg" viewBox="0 0 24 24">
-                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-            </svg>
-        </button>
-
-        <div class="sep"></div>
-        <span id="likeCountTag" onclick="toggleLikesView()"
-            style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px; padding: 0 8px;">
-            <svg viewBox="0 0 24 24">
-                <path
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg> <b>0</b>
-        </span>
-        <div class="sep"></div>
-        <div class="view-toggle-container">
-            <div class="view-slider" id="viewSlider"></div>
-            <!-- Grid Mode Btn -->
-            <button class="view-btn active" onclick="setViewMode('grid')" id="btnGrid" title="격자 뷰">
-                <svg viewBox="0 0 24 24">
-                    <path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z" />
+        <!-- 2번째 줄: 검색버튼 및 각종 아이콘/필터 -->
+        <div class="header-row bottom-row" style="display:flex; width:100%; gap:10px; align-items:center; overflow-x:auto; padding-bottom:4px;">
+            <button class="icon-btn" onclick="searchVideos(true)" title="검색" style="flex-shrink:0;">
+                <svg class="btn-svg" viewBox="0 0 24 24">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                 </svg>
             </button>
-            <!-- Rich List Mode Btn -->
-            <button class="view-btn" onclick="setViewMode('list')" id="btnList" title="리스트 뷰">
-                <svg viewBox="0 0 24 24">
-                    <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
+            <button class="icon-btn refresh-btn" onclick="searchVideos(true, false, true)" title="새로고침" style="flex-shrink:0;">
+                <svg class="btn-svg" viewBox="0 0 367.136 367.136" fill="none" stroke="currentColor" stroke-width="0.7"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M336.554,86.871c-11.975-18.584-27.145-34.707-44.706-47.731L330.801,0H217.436v113.91L270.4,60.691
+                c40.142,28.131,65.042,74.724,65.042,124.571c0,83.744-68.13,151.874-151.874,151.874S31.694,269.005,31.694,185.262
+                c0-58.641,32.781-111.009,85.551-136.669l-13.119-26.979C73.885,36.318,48.315,59.1,30.182,87.494
+                c-18.637,29.184-28.488,62.991-28.488,97.768c0,100.286,81.588,181.874,181.874,181.874s181.874-81.588,181.874-181.874
+                C365.442,150.223,355.453,116.201,336.554,86.871z" />
                 </svg>
             </button>
+            <div class="sep" style="flex-shrink:0;"></div>
+            <button class="custom-trigger" id="goalTrigger" onclick="toggleCommonMenu(event, 'goal', this)" style="min-width: 90px; flex-shrink:0;">
+                <svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" /></svg>
+                <span id="goalText">관련성</span>
+            </button>
+            <button class="custom-trigger" id="durationTrigger" onclick="toggleCommonMenu(event, 'duration', this)" style="min-width: 90px; flex-shrink:0;">
+                <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" /></svg>
+                <span id="durText">길이</span>
+            </button>
+            <label class="radio-label" title="고음질 필터 적용" style="flex-shrink:0;">
+                <input type="checkbox" id="hqMode" class="radio-chk"> <span>✨ HQ</span>
+            </label>
+            <div class="sep" style="flex-shrink:0;"></div>
+            <button class="icon-btn" onclick="toggleHeaderMenu()" title="설정 메뉴" style="flex-shrink:0;">
+                <svg class="btn-svg" viewBox="0 0 24 24">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                </svg>
+            </button>
+            <div class="sep" style="flex-shrink:0;"></div>
+            <span id="likeCountTag" onclick="toggleLikesView()" style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px; padding: 0 8px; flex-shrink:0;">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg> <b>0</b>
+            </span>
+            <div class="sep" style="flex-shrink:0;"></div>
+            <div class="view-toggle-container" style="flex-shrink:0;">
+                <div class="view-slider" id="viewSlider"></div>
+                <button class="view-btn active" onclick="setViewMode('grid')" id="btnGrid" title="격자 뷰">
+                    <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z" /></svg>
+                </button>
+                <button class="view-btn" onclick="setViewMode('list')" id="btnList" title="리스트 뷰">
+                    <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" /></svg>
+                </button>
+            </div>
         </div>
     </header>
     <div id="bottomShadow"></div>

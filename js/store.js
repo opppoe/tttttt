@@ -8,14 +8,14 @@ const Store = {
         // [핵심 변경] 모바일 환경(iOS 등)에서는 앱을 닫거나 백그라운드로 전환 시 setTimeout이 증발합니다.
         // 따라서 시스템의 기본 저장소인 localStorage에는 지연 없이 즉각적으로(동기적) 저장합니다.
         try {
-            localStorage.setItem('yt_my_likes', JSON.stringify([...window.myLikes.values()]));
+            localStorage.setItem('yt_my_likes', JSON.stringify([...myLikes.values()]));
             // 누락되었던 채널 즐겨찾기도 저장
-            localStorage.setItem('yt_my_channels', JSON.stringify([...(window.myChannels || new Map()).values()]));
-            localStorage.setItem('yt_watch_progress', JSON.stringify(window.watchProgress));
-            localStorage.setItem('yt_history', JSON.stringify(window.searchHistory));
-            localStorage.setItem('yt_block_v', JSON.stringify([...window.blockedVideos]));
-            localStorage.setItem('yt_block_ch', JSON.stringify([...window.blockedChannels]));
-            localStorage.setItem('yt_banned_keywords', JSON.stringify(window.bannedKeywords));
+            localStorage.setItem('yt_my_channels', JSON.stringify([...(typeof myChannels !== 'undefined' ? myChannels : new Map()).values()]));
+            localStorage.setItem('yt_watch_progress', JSON.stringify(watchProgress));
+            localStorage.setItem('yt_history', JSON.stringify(searchHistory));
+            localStorage.setItem('yt_block_v', JSON.stringify([...blockedVideos]));
+            localStorage.setItem('yt_block_ch', JSON.stringify([...blockedChannels]));
+            localStorage.setItem('yt_banned_keywords', JSON.stringify(bannedKeywords));
         } catch (err) {
             console.error("❌ 로컬스토리지 즉각 저장 실패:", err);
         }
