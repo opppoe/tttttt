@@ -245,9 +245,9 @@ function playVideo(target, containerId) {
         }
     }
 
-    // 2. iframe에 직접 넣을 유튜브 영상 주소(src)를 조립합니다. (playerVars 설정 포함)
+    // 2. iframe에 직접 넣을 유튜브 영상 주소(src)를 조립합니다. (광고 최소화를 위해 nocookie 도메인 사용)
     const originUrl = encodeURIComponent(window.location.origin);
-    let iframeSrc = `https://www.youtube.com/embed/${v.id}?enablejsapi=1&autoplay=1&playsinline=1&controls=1&disablekb=0&rel=0&modestbranding=1&fs=1&iv_load_policy=3&origin=${originUrl}`;
+    let iframeSrc = `https://www.youtube-nocookie.com/embed/${v.id}?enablejsapi=1&autoplay=1&playsinline=1&controls=1&disablekb=0&rel=0&modestbranding=1&fs=1&iv_load_policy=3&origin=${originUrl}`;
     if (startTime > 0) iframeSrc += `&start=${startTime}`;
 
     // 3. pb.innerHTML에 src가 완성된 iframe을 삽입합니다.
