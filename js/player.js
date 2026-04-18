@@ -532,6 +532,12 @@ function onPlayerReady(e) {
         e.target.unMute();
         e.target.setVolume(Number(savedVol));
     }
+    // [추가] 모바일 사파리 등에서 iframe 교체 후 자동재생이 씹히는 현상 방어
+    if (e.target && e.target.playVideo) {
+        setTimeout(() => {
+            e.target.playVideo();
+        }, 150);
+    }
 }
 let nativeVolSyncTimer = null; // 상단 변수 영역에 추가해 주세요.
 
