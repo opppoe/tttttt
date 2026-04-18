@@ -1,743 +1,448 @@
 <!doctype html>
 <html lang="ko">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>YouTube Music Player (Dynamic)</title>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="My Music">
-<meta name="theme-color" content="#000000">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <title>YouTube Ultimate : U-Shape Toast</title>
+    <meta name="theme-color" content="#000000">
 
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' style='background:%23000'%3E%3Crect width='100%25' height='100%25' fill='%231c1c1e'/%3E%3Cpath d='M180 140v232l200-116-200-116z' fill='%23ff0000'/%3E%3C/svg%3E">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' style='background:%23000'%3E%3Crect width='100%25' height='100%25' fill='%231c1c1e'/%3E%3Cpath d='M180 140v232l200-116-200-116z' fill='%23ff0000'/%3E%3C/svg%3E">
-
-<link rel="manifest" href='data:application/manifest+json,{"name":"YouTube Music Pro","short_name":"Music","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#000000","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27 style=%27background:%23000%27%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%231c1c1e%27/%3E%3Cpath d=%27M180 140v232l200-116-200-116z%27 fill=%27%23ff0000%27/%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}'>
-  <style>
-    /* 1. 기본 테마 설정 */
-    :root{ --bg:#000; --card:#1c1c1e; --elev:#2c2c2e; --text:#fff; --sub:rgba(255,255,255,.65); --accent:#007aff; --warn:#ff453a; --border:rgba(255,255,255,.12); --radius:10px; --minCard:300px; --yt-red:#ff0000; }
-    *{box-sizing:border-box}
-    body{ margin:0;padding:12px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text); padding-bottom:80px; }
-    .container{width:100%; max-width:1800px; margin:0 auto; padding:0 4px;}
-    
-    /* 2. 헤더 */
-    header{ 
-      background:rgba(28,28,30,.95); backdrop-filter:blur(12px); 
-      border:1px solid var(--border); border-radius:var(--radius); 
-      padding:8px 12px; 
-      display:flex; align-items:center; gap:8px; 
-      margin-bottom:0; 
-      position: sticky; top: 0; z-index: 100;
-      white-space: nowrap; overflow-x: auto;
-    }
-    header::-webkit-scrollbar{display:none} 
-    
-    input, select, button { 
-      background:var(--elev); border:1px solid var(--border); color:var(--text); 
-      height: 36px; padding:0 12px; border-radius:8px; outline:none; font-size:13px; font-weight:500;
-      display:flex; align-items:center; justify-content:center;
-    }
-    input:focus, select:focus{ border-color:var(--accent); }
-    
-    #keyword { flex: 1; min-width: 150px; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.15); }
-    #keyword:focus { background:rgba(0,0,0,0.5); border-color:var(--accent); }
-
-    button{ background:var(--accent); color:#fff; border:0; cursor:pointer; font-weight:700; transition:.2s; }
-    button:hover { filter: brightness(1.1); }
-    button.secondary{ background:rgba(255,255,255,.1); border:1px solid var(--border); color:var(--text); font-weight:500; }
-    button.secondary:hover{ background:rgba(255,255,255,.15); }
-    button.icon-btn { padding: 0 10px; font-size: 16px; }
-
-    .sep { width:1px; height:20px; background:var(--border); margin:0 4px; flex-shrink: 0;}
-    select { cursor: pointer; appearance: none; padding-right: 24px; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 6px center; background-size: 14px; }
-
-    /* 트렌드 바 */
-    #trendBar{ 
-      width:100%; display:none; flex-direction:column; gap:6px; 
-      padding:10px; background:var(--card); border:1px solid var(--border); 
-      border-top:0; border-radius: 0 0 var(--radius) var(--radius);
-      margin-top: 0; margin-bottom: 10px;
-    }
-    #trendBar.visible{ display:flex; }
-    .trend-list{ display:flex; gap:6px; flex-wrap:wrap; max-height:180px; overflow-y:auto; }
-    .t-chip{ background:rgba(255,255,255,.08); border:1px solid var(--border); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:.2s; }
-    .t-chip:hover{ background:var(--accent); border-color:var(--accent); }
-    .t-rank{ color:var(--accent); font-weight:900; }
-
-    #status { text-align:center; padding: 10px 0; color:var(--sub); font-size:12px; min-height: 20px; }
-
-    /* 그리드 레이아웃 */
-    #results.grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); }
-    #results.list{ display:flex; flex-direction:column; gap:0; }
-
-    .center-msg { text-align:center; padding:60px 20px; color:var(--sub); font-size:14px; line-height: 1.6; }
-
-    /* 카드 (그리드 뷰) */
-    .card{ background:var(--card); border-radius:var(--radius); overflow:hidden; cursor:pointer; border:1px solid var(--border); transition:.2s; position:relative; }
-    .card:hover{ transform:translateY(-2px); border-color:var(--sub); }
-    .card.active{ background: rgba(255,255,255,0.08); border-color: var(--border); } 
-
-    .thumb{ position:relative; aspect-ratio:16/9; }
-    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .dur{ position:absolute; right:6px; bottom:6px; background:rgba(0,0,0,.8); padding:2px 4px; border-radius:4px; font-size:10px; font-weight:700; z-index: 5;}
-    .like-btn{ position:absolute; top:6px; left:6px; width:28px; height:28px; background:rgba(0,0,0,.5); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff; z-index:5; transition:.2s; }
-    .like-btn.liked{ background:rgba(255,0,0,.8); }
-    .kebab{ position:absolute; top:6px; right:6px; width:28px; height:28px; background:rgba(0,0,0,.5); border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; z-index:5; font-weight:900; font-size:12px;}
-    .body{ padding:10px; display:grid; gap:2px; }
-    .title{ font-weight:700; font-size:13px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.35; margin-bottom: 2px;}
-    .meta{ font-size:11px; color:var(--sub); display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
-    .chip-speed{ background:rgba(255,0,0,0.2); color:#ff453a; padding:1px 5px; border-radius:4px; font-weight:700; font-size:10px; border:1px solid rgba(255,69,58,0.3); }
-
-    /* 유튜브 뮤직 스타일 리스트 */
-    .li { 
-      display:flex; align-items:center; 
-      padding: 8px 12px; 
-      border-bottom:1px solid rgba(255,255,255,0.05); 
-      cursor:pointer; background:transparent; transition: background 0.2s;
-      height: 64px;
-    }
-    .li:hover { background: rgba(255,255,255,0.05); }
-    .li.active { background: rgba(255,255,255,0.1); }
-    .li-thumb { width: 80px; height: 45px; border-radius: 4px; overflow:hidden; flex-shrink: 0; margin-right: 12px; background: #000; position: relative;}
-    .li-thumb img { width:100%; height:100%; object-fit:cover; }
-    .li-body { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap: 2px; }
-    .li-title { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#fff; }
-    .li-meta { font-size:12px; color:var(--sub); display:flex; align-items:center; }
-    .li-actions { margin-left: auto; display:flex; gap: 4px; align-items:center; }
-    .li-btn { width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background:transparent; border:0; color:var(--sub); font-size:16px; border-radius:50%; }
-    .li-btn:hover { background:rgba(255,255,255,0.1); color:#fff; }
-    .li-btn.liked { color: #ff0000; }
-
-    /* [업그레이드] 다이나믹 이퀄라이저 스타일 */
-    .visualizer {
-      display:flex; gap:2px; height:16px; align-items:flex-end;
-      position:absolute; bottom:6px; left:6px;
-      z-index:20; pointer-events:none;
-      padding:2px; border-radius:4px;
-      background: rgba(0,0,0,0.3);
-    }
-    /* 바 5개로 증가 */
-    .v-bar {
-      width:3px; background:#fff; 
-      height:2px; /* 기본 높이 */
-      border-radius:1px;
-      transition: height 0.08s ease; /* 부드럽지만 빠른 전환 */
-    }
-    /* 포인트 컬러 */
-    .v-bar:nth-child(3) { background: var(--accent); } 
-    
-    .li.active .li-thumb img, .card.active .thumb img { opacity: 0.4; transition: opacity 0.3s; }
-
-    /* 하단 미니 플레이어 썸네일 */
-    .mini-thumb { 
-      width: 50px; height: 28px; 
-      border-radius: 4px; overflow: hidden; 
-      position: relative; flex-shrink: 0; margin-right: 12px;
-      background: #000;
-    }
-    .mini-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    
-    /* 미니 플레이어 이퀄라이저 조정 */
-    .mini-thumb .visualizer { 
-      bottom: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(0,0,0,0.5); 
-      justify-content: center; align-items: center; 
-      gap: 3px; border-radius: 0; padding-bottom: 4px;
-    }
-    
-    /* 토스트 알림 */
-    #toast { 
-      position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); 
-      background:rgba(30,30,30,0.95); color:#fff; padding:10px 20px; 
-      border-radius:30px; font-size:13px; font-weight:600; 
-      opacity:0; pointer-events:none; transition:0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
-      z-index:9999; box-shadow:0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-      display: flex; align-items: center; gap: 8px;
-    }
-    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-    /* 플레이어 확장 */
-    .player-block{ 
-      grid-column: 1 / -1; 
-      background:#000; border-radius:var(--radius); overflow:hidden; margin:8px 0; 
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-      animation: slideDown 0.3s ease-out;
-    }
-    @keyframes slideDown { from{opacity:0; transform:translateY(-10px)} to{opacity:1; transform:translateY(0)} }
-    .player-head{ padding:0 12px; display:flex; justify-content:space-between; background:rgba(255,255,255,.08); align-items:center; height: 36px;}
-    .player-frame{ width:100%; height:clamp(300px, 60vw, 70vh); }
-    #playerHost{ width:100%; height:100%; }
-
-    /* 미니 플레이어 */
-    #mini{ position:fixed; bottom:0; left:0; right:0; height:60px; background:rgba(20,20,20,.95); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; flex-direction:column; z-index:1000; transform:translateY(100%); transition:.3s; }
-    #mini.visible{ transform:translateY(0); }
-    
-    .seek{ height:4px; background:rgba(255,255,255,.2); cursor:pointer; width:100%; transition:height 0.1s; }
-    .seek:hover{ height:10px; }
-    .seek-fill{ height:100%; background:var(--yt-red); width:0%; transition: width 0.1s linear; }
-    
-    .mini-row{ flex:1; display:flex; align-items:center; padding:0 12px; gap:0; } 
-    .m-info{ flex:1; min-width:0; cursor:pointer; }
-    .m-title{ font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .m-sub{ font-size:11px; color:var(--sub); }
-    .m-ctrl{ display:flex; gap:4px; align-items:center; }
-    .icon-btn{ background:transparent; border:0; color:#fff; font-size:18px; cursor:pointer; padding:8px; height:auto; }
-
-    /* 유틸 */
-    #menu{ position:fixed; background:rgba(30,30,30,.98); border:1px solid var(--border); border-radius:8px; padding:4px; display:none; z-index:2000; min-width:160px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
-    #menu.visible{ display:block; }
-    .menu-item{ padding:8px 12px; color:#fff; cursor:pointer; border-radius:4px; font-size:13px; }
-    .menu-item:hover{ background:rgba(255,255,255,.1); }
-    #menuBg{ position:fixed; inset:0; z-index:1999; display:none; }
-    
-    #backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1100; display:none; }
-    #backdrop.visible{ display:block; }
-    #sheet{ position:fixed; left:0; right:0; bottom:0; height:60vh; background:#1a1a1a; border-radius:16px 16px 0 0; z-index:1200; transform:translateY(100%); transition:.3s; display:flex; flex-direction:column; border-top:1px solid var(--border); }
-    #sheet.open{ transform:translateY(0); }
-    .q-item{ display:flex; gap:10px; padding:10px 16px; border-bottom:1px solid var(--border); align-items:center; cursor:pointer; }
-    .q-item.active{ background:rgba(0,122,255,.15); }
-
-    #loadMore{ width:100%; margin-top:20px; display:none; }
-  </style>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="YouTube Ultimate">
+    <link rel="apple-touch-icon" href="assets/icon.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/player.css">
 </head>
+
 <body>
-
-<div class="container">
-  <header>
-    <select id="region"><option value="KR">KR</option><option value="US">US</option><option value="JP">JP</option></select>
-    <select id="goal" style="min-width:130px">
-      <option value="trend">트렌드/소재</option>
-      <option value="hit">검증된 대박</option>
-      <option value="ref">레퍼런스</option>
-      <option value="rate">반응좋음</option>
-      <option value="speed">급상승(속도)</option>
-    </select>
-    <select id="dateFilter"><option value="all">전체기간</option><option value="today">오늘</option><option value="week">이번주</option><option value="month">이번달</option></select>
-    <select id="duration"><option value="any">모든길이</option><option value="short">4분↓</option><option value="medium">4~20분</option><option value="long">20분↑</option></select>
-    
-    <div class="sep"></div>
-
-    <input id="keyword" placeholder="검색어를 입력하세요..." onkeypress="if(event.key==='Enter') searchVideos(true)" />
-    
-    <button onclick="searchVideos(true)">검색</button>
-    <button class="secondary" onclick="loadYoutubeTrends(true)">🔥 급상승</button>
-    <button class="secondary icon-btn" onclick="showLikes()" title="보관함">❤️</button>
-    <button class="secondary icon-btn" id="viewBtn" onclick="toggleView()" title="뷰 전환">▦</button>
-    <button class="secondary icon-btn" onclick="setSleepTimer()" title="취침 타이머">💤</button>
-    
-    <div class="sep"></div>
-
-    <div style="font-size:11px;color:var(--sub);cursor:pointer;display:flex;align-items:center;gap:4px" onclick="manageKey()" title="클릭하여 API Key 관리">
-      Q: <b id="quotaVal" style="color:var(--accent)">0</b>
-    </div>
-    <label style="font-size:11px;color:var(--sub);white-space:nowrap;display:flex;align-items:center;gap:4px;cursor:pointer">
-      <input type="checkbox" id="autoPlay"> 자동
-    </label>
-  </header>
-
-  <div id="trendBar">
-    <div style="display:flex;justify-content:space-between;color:var(--sub);font-size:11px;margin-bottom:6px">
-      <span>🔥 실시간 인기 동영상 (API Direct)</span>
-      <div><span id="trendTime" style="margin-right:6px"></span><button style="font-size:11px;padding:2px 6px;height:auto;background:transparent;color:var(--sub);border:1px solid var(--border)" onclick="closeTrendBar()">닫기</button></div>
-    </div>
-    <div class="trend-list" id="trendList"></div>
-  </div>
-
-  <div id="status">
-    검색어를 입력하고 <b>[검색]</b>을 누르세요. API Key가 없으면 입력창이 뜹니다.
-  </div>
-  
-  <div id="results" class="grid"></div>
-  <button id="loadMore" class="secondary" onclick="searchVideos(false)">더 보기</button>
-</div>
-
-<div id="mini">
-  <div class="seek" id="seek" onclick="seekVideo(event)"><div class="seek-fill" id="seekFill"></div></div>
-  <div class="mini-row">
-    <div class="mini-thumb" id="miniThumb" onclick="goToPlayback()"></div>
-
-    <div class="m-info" onclick="goToPlayback()">
-      <div class="m-title" id="mTitle">재생 중인 영상 없음</div>
-      <div class="m-sub" id="mSub">-</div>
-    </div>
-    <div class="m-ctrl">
-      <button class="icon-btn" onclick="toggleLoop()" id="loopBtn" style="font-size:14px;color:var(--sub)" title="반복 재생">🔁</button>
-      <button class="icon-btn" onclick="toggleShuffle()" id="shuffleBtn" title="셔플" style="font-size:14px;color:var(--sub)">🔀</button>
-      <button class="icon-btn" onclick="openQueue()">≣</button>
-      <button class="icon-btn" onclick="prev()">⏮</button>
-      <button class="icon-btn" onclick="togglePlay()" id="playBtn">▶</button>
-      <button class="icon-btn" onclick="next()">⏭</button>
-      <button class="icon-btn" onclick="closePlayer()">✕</button>
-    </div>
-  </div>
-</div>
-
-<div id="backdrop" onclick="closeQueue()"></div>
-<div id="sheet">
-  <div style="padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-    <span style="font-weight:700;font-size:14px;margin-left:4px">재생 대기열</span>
-    <button class="secondary" onclick="closeQueue()" style="height:28px;font-size:12px">닫기</button>
-  </div>
-  <div style="flex:1;overflow-y:auto" id="qBody"></div>
-</div>
-
-<div id="menuBg" onclick="closeMenu()"></div>
-<div id="menu">
-  <div class="menu-item" onclick="menuAction('addQueue')">➕ 대기열 추가</div>
-  <div class="menu-item" onclick="menuAction('playNext')">⏭ 다음 재생</div>
-  <div class="menu-item" onclick="menuAction('hideVideo')">🚫 영상 숨김</div>
-  <div class="menu-item" onclick="menuAction('hideChannel')">🚫 채널 차단</div>
-  <div class="menu-item" onclick="menuAction('copyUrl')">🔗 링크 복사</div>
-</div>
-
-<div id="toast"></div>
-
-<script>
-  window.onerror = function(m){ showToast("오류: "+m); return false; };
-  window.addEventListener('load', ()=>{
-    const k = localStorage.getItem('yt_api_key_lite');
-    if(k) { API_KEY=k; $('status').innerText = ""; }
-  });
-
-  const $=(id)=>document.getElementById(id);
-  const escapeHtml=(t)=>(t||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const fmtNum=(n)=>{n=Number(n);return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n;};
-  const parseDuration=(d)=>{if(!d)return 0;const m=d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);if(!m)return 0;return (parseInt(m[1]||0)*3600)+(parseInt(m[2]||0)*60)+parseInt(m[3]||0);};
-  const fmtDur=(s)=>{s=Math.max(0,s|0);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),z=s%60;const p=n=>String(n).padStart(2,'0');return h>0?`${h}:${p(m)}:${p(z)}`:`${m}:${p(z)}`;};
-
-  let API_KEY="", quotaUsed=Number(localStorage.getItem('yt_quota_used'))||0;
-  $('quotaVal').innerText = quotaUsed.toLocaleString();
-  let currentData=[], queue=[], queueIndex=-1, nextPageToken=null, currentQuery={}, viewMode='grid', myLikes=new Map(), player=null, menuTargetIdx=-1;
-  let blockedVideos=new Set(JSON.parse(localStorage.getItem('yt_block_v')||'[]'));
-  let blockedChannels=new Set(JSON.parse(localStorage.getItem('yt_block_c')||'[]'));
-  let loopMode = 0; 
-  let isShuffle = false;
-  let sleepTimerId = null;
-  
-  // [NEW] 비주얼라이저용 애니메이션 ID
-  let vizAnimId = null;
-
-  try{const l=localStorage.getItem('yt_my_likes');if(l)JSON.parse(l).forEach(v=>myLikes.set(v.id,v));}catch(e){}
-
-  function showToast(msg) {
-    const t = $('toast');
-    t.innerText = msg;
-    t.classList.add('show');
-    if(t.timer) clearTimeout(t.timer);
-    t.timer = setTimeout(() => t.classList.remove('show'), 2000);
-  }
-
-  function checkKey() {
-    if(API_KEY) return true;
-    const input = prompt("YouTube Data API Key를 입력해주세요:\n(입력된 키는 브라우저에만 저장됩니다)");
-    if(input && input.trim()) {
-      API_KEY = input.trim();
-      localStorage.setItem('yt_api_key_lite', API_KEY);
-      showToast("✅ API Key가 저장되었습니다.");
-      return true;
-    }
-    return false;
-  }
-  function manageKey() {
-    const act = prompt("API Key 관리\n\n1. 키 수정/입력\n2. 할당량(Quota) 초기화\n3. 취소", "1");
-    if(act === '1') {
-      const k = prompt("새 API Key 입력:", API_KEY);
-      if(k!==null) { API_KEY=k.trim(); localStorage.setItem('yt_api_key_lite', API_KEY); showToast("저장됨"); }
-    } else if(act === '2') {
-      quotaUsed=0; localStorage.setItem('yt_quota_used',0); updateQuotaUI(); showToast("초기화됨");
-    }
-  }
-  function addQuota(n){ quotaUsed+=n; localStorage.setItem('yt_quota_used',quotaUsed); updateQuotaUI(); }
-  function updateQuotaUI(){ $('quotaVal').innerText=quotaUsed.toLocaleString(); }
-
-  async function fetchJson(url){
-    const res = await fetch(url);
-    if(res.status===403){
-      const e=await res.json().catch(()=>({}));
-      if((e.error?.message||"").toLowerCase().includes("quota")) showToast("🚨 할당량 초과!");
-      else showToast("⛔ 권한 오류 (403)");
-      throw new Error("403");
-    }
-    const j=await res.json(); if(j.error)throw new Error(j.error.message); return j;
-  }
-
-  async function searchVideos(isNew, autoPlayFirst=false){
-    if(!checkKey()) return; 
-    
-    let q=$('keyword').value.trim();
-    if(isNew && !q && currentQuery.mode!=='trends') return showToast("검색어를 입력하세요.");
-
-    if(isNew){ currentQuery={q,mode:'search'}; nextPageToken=null; currentData=[]; $('results').innerHTML=""; $('status').innerText="검색 중..."; closePlayer(); }
-    else if(!nextPageToken) return;
-
-    try{
-      let url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&key=${encodeURIComponent(API_KEY)}`;
-      if(q) url+=`&q=${encodeURIComponent(q)}`;
-      url+=`&regionCode=${$('region').value}`;
-      
-      const goal=$('goal').value;
-      let order = 'relevance';
-      if(goal==='trend'||goal==='speed') order='date'; else if(goal==='hit') order='viewCount'; else if(goal==='rate') order='rating';
-      url+=`&order=${order}`;
-      
-      const df=$('dateFilter').value;
-      if(df!=='all'){const d=new Date();if(df==='today')d.setDate(d.getDate()-1);if(df==='week')d.setDate(d.getDate()-7);if(df==='month')d.setMonth(d.getMonth()-1);url+=`&publishedAfter=${d.toISOString()}`;}
-      
-      const dur=$('duration').value;
-      if(dur!=='any')url+=`&videoDuration=${dur}`;
-      if(nextPageToken)url+=`&pageToken=${nextPageToken}`;
-
-      const data=await fetchJson(url); addQuota(100); nextPageToken=data.nextPageToken;
-      const items=data.items||[];
-      if(isNew && !items.length){ $('results').innerHTML='<div class="center-msg">결과 없음</div>'; $('status').innerText=""; return; }
-
-      const ids=items.map(x=>x.id.videoId).join(',');
-      const detData=await fetchJson(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics,snippet&id=${ids}&key=${encodeURIComponent(API_KEY)}`);
-      addQuota(1);
-
-      let newItems=detData.items.map(i=>{
-        const pub = new Date(i.snippet.publishedAt);
-        const hours = Math.max(0.1, (new Date() - pub) / 36e5);
-        const vph = Number(i.statistics.viewCount||0) / hours;
-        return {
-          id:i.id, title:i.snippet.title, channelTitle:i.snippet.channelTitle, channelId:i.snippet.channelId,
-          thumb:i.snippet.thumbnails.medium?.url||i.snippet.thumbnails.default?.url,
-          duration:parseDuration(i.contentDetails.duration), viewCount:Number(i.statistics.viewCount), vph:vph
-        };
-      }).filter(i=>!blockedVideos.has(i.id)&&!blockedChannels.has(i.channelId));
-
-      if(goal==='speed') newItems.sort((a,b)=>b.vph-a.vph);
-
-      currentData=[...currentData,...newItems];
-      if(isNew){ queue=[...newItems]; queueIndex=-1; } else { queue=[...queue,...newItems]; }
-      
-      renderResults(newItems, isNew);
-      $('status').innerText=`${currentData.length}개 로드됨`;
-      $('loadMore').style.display=nextPageToken?'block':'none';
-      if(isNew && autoPlayFirst && currentData.length>0) setTimeout(()=>playVideo(0),500);
-
-    }catch(e){ console.error(e); $('status').innerText="오류: "+e.message; }
-  }
-
-  async function loadYoutubeTrends(force){
-    if(!checkKey()) return;
-    const bar=$('trendBar'), list=$('trendList');
-    if(bar.classList.contains('visible') && !force) return;
-    bar.style.display='flex'; setTimeout(()=>bar.classList.add('visible'),10);
-    list.innerHTML='<div style="padding:10px;color:#888;font-size:12px">로딩...</div>';
-
-    try{
-      const r=$('region').value;
-      const data=await fetchJson(`https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=${r}&maxResults=15&key=${encodeURIComponent(API_KEY)}`);
-      addQuota(1);
-      let h='';
-      data.items.forEach((i,x)=>{
-        const t=escapeHtml(i.snippet.title), safeT=t.replace(/'/g,"\\'");
-        h+=`<div class="t-chip" onclick="setTrendAndSearch('${safeT}')"><span class="t-rank">${x+1}</span><span class="t-text" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t}</span></div>`;
-      });
-      list.innerHTML=h; $('trendTime').innerText=new Date().toLocaleTimeString();
-    }catch(e){ list.innerHTML=`<div style="padding:10px;color:var(--warn)">실패: ${e.message}</div>`; }
-  }
-  function setTrendAndSearch(k){ $('keyword').value = k; searchVideos(true, true); }
-  function closeTrendBar(){ $('trendBar').classList.remove('visible'); setTimeout(()=>$('trendBar').style.display='none',300); }
-
-  function renderResults(items, isNew){
-    const c=$('results'); if(isNew)c.innerHTML='';
-    const startIdx=currentData.length-items.length;
-    const goal=$('goal').value;
-
-    let h='';
-    items.forEach((v,i)=>{
-      const gIdx=startIdx+i, liked=myLikes.has(v.id)?'liked':'', d=fmtDur(v.duration);
-      let sp = (goal==='speed' && v.vph>0) ? `<span class="chip-speed">🚀 ${(v.vph>=1000?(v.vph/1000).toFixed(1)+'K':Math.round(v.vph))}/h</span>` : '';
-      
-      if(viewMode === 'grid') {
-        const inner=`
-          <div class="thumb">
-            <img src="${v.thumb}">
-            <div class="dur">${d}</div>
-            <div class="like-btn ${liked}" onclick="toggleLike(event,'${v.id}',${gIdx})">♥</div>
-            <div class="kebab" onclick="openMenu(event,${gIdx})">⋮</div>
-          </div>
-          <div class="body">
-            <div class="title">${escapeHtml(v.title)}</div>
-            <div class="meta">${sp} <span>${escapeHtml(v.channelTitle)}</span> • <span>${fmtNum(v.viewCount)}회</span></div>
-          </div>`;
-        h+= `<div class="card" id="c-${gIdx}" onclick="playVideo(${gIdx})">${inner}</div>`;
-      } else {
-        h+= `
-        <div class="li" id="c-${gIdx}" onclick="playVideo(${gIdx})">
-          <div class="li-thumb"><img src="${v.thumb}"></div>
-          <div class="li-body">
-            <div class="li-title">${escapeHtml(v.title)}</div>
-            <div class="li-meta">${sp} ${escapeHtml(v.channelTitle)} • ${fmtNum(v.viewCount)}</div>
-          </div>
-          <div class="li-actions">
-            <button class="li-btn ${liked}" onclick="toggleLike(event,'${v.id}',${gIdx})">♥</button>
-            <button class="li-btn" onclick="openMenu(event,${gIdx})">⋮</button>
-          </div>
-        </div>`;
-      }
-    });
-    c.insertAdjacentHTML('beforeend',h);
-  }
-  
-  function toggleView(){ 
-    viewMode=viewMode==='grid'?'list':'grid'; 
-    $('results').className=viewMode; 
-    if(currentData.length){ 
-      $('results').innerHTML=''; 
-      renderResults(currentData,false); 
-      // 뷰 전환 시 이퀄라이저 복구
-      if(queueIndex >= 0) {
-        setTimeout(() => {
-          attachVisualizer(queueIndex);
-          const card=$('c-'+queueIndex); 
-          if(card) card.classList.add('active');
-          if(player) goToPlayback(); 
-        }, 50);
-      }
-    } 
-  }
-
-  const tag=document.createElement('script'); tag.src="https://www.youtube.com/iframe_api"; document.head.appendChild(tag);
-  
-  function playVideo(idx){
-    if(idx<0||idx>=queue.length) return;
-    queueIndex=idx; const v=queue[idx];
-    $('mTitle').innerText=v.title; $('mSub').innerText=v.channelTitle; $('mini').classList.add('visible'); $('playBtn').innerText='⏸';
-    document.querySelectorAll('.active').forEach(e=>e.classList.remove('active'));
-    
-    // [업데이트] 미니 플레이어 썸네일 & 이퀄라이저
-    const mt = $('miniThumb');
-    mt.innerHTML = `
-      <img src="${v.thumb}">
-      <div class="visualizer" id="viz-mini">
-        <div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div>
-      </div>
-    `;
-
-    attachVisualizer(idx);
-
-    const card=$('c-'+idx); if(card) card.classList.add('active');
-
-    const ex=$('playerBlock'); if(ex) ex.remove();
-    const pb=document.createElement('div'); pb.id='playerBlock'; pb.className='player-block';
-    pb.innerHTML=`<div class="player-head"><span style="color:#fff;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%">▶ ${escapeHtml(v.title)}</span><button onclick="closePlayer()" style="background:transparent;border:0;color:#fff;font-size:18px">✕</button></div><div class="player-frame"><div id="playerHost"></div></div>`;
-    
-    const con=$('results');
-    if(viewMode==='list' && card && card.parentNode===con) card.insertAdjacentElement('afterend',pb);
-    else if(viewMode==='grid' && card && card.parentNode===con){
-      const w=card.offsetWidth, cw=con.offsetWidth, cols=Math.floor((cw+12)/(w+12))||1;
-      const rowEnd=Math.ceil((idx+1)/cols)*cols-1, anchor=$('c-'+Math.min(rowEnd,currentData.length-1));
-      if(anchor) anchor.insertAdjacentElement('afterend',pb); else con.prepend(pb);
-    } else con.prepend(pb);
-
-    setTimeout(()=>pb.scrollIntoView({behavior:'smooth',block:'center'}),100);
-    
-    if(player){ player.destroy(); player=null; }
-    player=new YT.Player('playerHost',{
-      videoId:v.id,
-      playerVars:{'autoplay':1,'playsinline':1},
-      events:{'onStateChange':onStateChange}
-    });
-
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: v.title,
-        artist: v.channelTitle,
-        artwork: [{ src: v.thumb, sizes: '512x512', type: 'image/jpeg' }]
-      });
-      navigator.mediaSession.setActionHandler('play', togglePlay);
-      navigator.mediaSession.setActionHandler('pause', togglePlay);
-      navigator.mediaSession.setActionHandler('previoustrack', prev);
-      navigator.mediaSession.setActionHandler('nexttrack', next);
-    }
-  }
-
-  // [NEW] 자바스크립트 기반 동적 비주얼라이저
-  function attachVisualizer(idx){
-    // 기존 것 삭제
-    document.querySelectorAll('.visualizer').forEach(e => {
-        if(e.id !== 'viz-mini') e.remove(); // 미니플레이어는 유지
-    });
-
-    const target = $('c-'+idx);
-    if(!target) return;
-    
-    const thumbBox = target.querySelector('.li-thumb') || target.querySelector('.thumb');
-    if(thumbBox){
-      // ID 부여하여 식별
-      thumbBox.insertAdjacentHTML('beforeend', `
-        <div class="visualizer" id="viz-main">
-          <div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div><div class="v-bar"></div>
+    <div id="apiKeyModal" class="popup-modal">
+        <div class="modal-content">
+            <h3>🔑 YouTube API 키 설정</h3>
+            <p>앱을 사용하려면 본인의 YouTube API 키가 필요합니다.<br>(여러 개일 경우 쉼표(,)로 구분해서 입력)</p>
+            <input type="text" id="apiKeyInput" placeholder="AIzaSy... (API 키 입력)">
+            <div class="modal-btns">
+                <button onclick="saveApiKey()">저장 및 시작</button>
+                <button class="cancel" onclick="closeApiKeyModal()" id="apiCancelBtn" style="display:none;">취소</button>
+            </div>
         </div>
-      `);
-    }
-  }
+    </div>
 
-  // [NEW] 비주얼라이저 루프 (실제 오디오 데이터는 CORS로 불가하므로 시뮬레이션)
-  function startVisualizerLoop() {
-    if(vizAnimId) cancelAnimationFrame(vizAnimId);
-    
-    function loop() {
-      // 메인 및 미니 플레이어의 모든 바를 찾음
-      const bars = document.querySelectorAll('.v-bar');
-      bars.forEach(bar => {
-        // 랜덤한 높이 (20% ~ 100%)
-        const h = Math.floor(Math.random() * 80) + 20;
-        bar.style.height = h + '%';
-      });
-      
-      // 약간의 딜레이를 주어 너무 정신없지 않게 (setTimeout 대신 requestAnimationFrame 활용)
-      setTimeout(() => {
-        if(player && player.getPlayerState() === 1) {
-            vizAnimId = requestAnimationFrame(loop);
-        }
-      }, 70); // 0.07초마다 갱신
-    }
-    loop();
-  }
+    <div id="keywordModal" class="popup-modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <h3>🚫 차단 키워드 관리</h3>
+            <p>여기에 등록된 단어가 제목이나 채널명에 포함되면<br>검색 결과에서 완전히 제외됩니다.</p>
 
-  function stopVisualizerLoop() {
-    if(vizAnimId) cancelAnimationFrame(vizAnimId);
-    document.querySelectorAll('.v-bar').forEach(b => b.style.height = '2px'); // 정지 시 최소 높이로
-  }
+            <div style="display:flex; gap:8px; margin-bottom:16px;">
+                <input type="text" id="newKeywordInput" placeholder="차단 단어 (예: 쇼츠, 틱톡)"
+                    onkeydown="if(event.key==='Enter') addBannedKeyword()">
+                <button onclick="addBannedKeyword()" style="width:80px; padding:0; flex-shrink:0;">추가</button>
+            </div>
 
-  function onStateChange(e){ 
-    if(e.data===1){ 
-      $('playBtn').innerText='⏸'; startTi(); startVisualizerLoop();
-    } else {
-      $('playBtn').innerText='▶'; stopTi(); stopVisualizerLoop();
-    } 
-    
-    if(e.data===0) { 
-      if(loopMode === 2) {
-        player.playVideo(); 
-      } else if (loopMode === 1 && queueIndex === queue.length - 1) {
-        playVideo(0); 
-      } else {
-        next(); 
-      }
-    }
-  }
+            <div id="keywordList"
+                style="display:flex; flex-wrap:wrap; gap:8px; max-height:200px; overflow-y:auto; margin-bottom:20px; padding:12px; background:rgba(0,0,0,0.3); border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+            </div>
 
-  function closePlayer(){ 
-    if(player){player.destroy();player=null;} 
-    const p=$('playerBlock'); if(p)p.remove(); 
-    $('mini').classList.remove('visible'); 
-    stopTi(); stopVisualizerLoop();
-    document.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); 
-    document.querySelectorAll('.visualizer').forEach(e => {
-        if(e.id !== 'viz-mini') e.remove(); 
-    });
-  }
-  
-  function togglePlay(){ if(player) player.getPlayerState()===1?player.pauseVideo():player.playVideo(); }
-  function next(){ 
-    if(queue.length <= 1) return;
-    let nextIdx;
-    if(isShuffle){
-      do { nextIdx = Math.floor(Math.random() * queue.length); } while (nextIdx === queueIndex);
-    } else {
-      nextIdx = queueIndex + 1;
-    }
-    if(nextIdx < queue.length) playVideo(nextIdx); 
-  }
-  function prev(){ if(queueIndex>0)playVideo(queueIndex-1); }
-  function goToPlayback(){ const p=$('playerBlock'); if(p)p.scrollIntoView({behavior:'smooth',block:'center'}); }
-  
-  let timer=null;
-  function startTi(){ if(timer)clearInterval(timer); timer=setInterval(()=>{ if(player&&player.getCurrentTime){ $('seekFill').style.width=(player.getCurrentTime()/player.getDuration()*100)+'%'; } },500); }
-  function stopTi(){ if(timer)clearInterval(timer); }
-
-  function seekVideo(e) {
-    if(!player || !player.getDuration) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const ratio = x / rect.width;
-    const newTime = player.getDuration() * ratio;
-    player.seekTo(newTime, true);
-    $('seekFill').style.width = (ratio * 100) + '%';
-  }
-
-  function toggleLoop(){
-    loopMode = (loopMode + 1) % 3;
-    const btn = $('loopBtn');
-    if(loopMode === 0) { btn.innerText = '🔁'; btn.style.color = 'var(--sub)'; showToast("반복 없음"); } 
-    else if(loopMode === 1) { btn.innerText = '🔁'; btn.style.color = 'var(--accent)'; showToast("전체 반복"); } 
-    else { btn.innerText = '🔂'; btn.style.color = 'var(--accent)'; showToast("한 곡 반복"); } 
-  }
-
-  function toggleShuffle() {
-    isShuffle = !isShuffle;
-    const btn = $('shuffleBtn');
-    if(isShuffle) { btn.style.color = 'var(--accent)'; showToast("🔀 셔플 켜짐"); } 
-    else { btn.style.color = 'var(--sub)'; showToast("➡️ 순차 재생"); }
-  }
-
-  function setSleepTimer() {
-    const min = prompt("몇 분 뒤에 종료할까요?\n(0을 입력하면 취소됩니다)", "30");
-    if(min === null) return;
-    const m = parseInt(min);
-    if(sleepTimerId) clearTimeout(sleepTimerId);
-    if(m > 0) {
-      showToast(`💤 ${m}분 뒤에 종료됩니다.`);
-      sleepTimerId = setTimeout(() => {
-        if(player) player.pauseVideo();
-        showToast("💤 타이머 종료");
-        sleepTimerId = null;
-      }, m * 60 * 1000);
-    } else { showToast("타이머 취소됨"); }
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if(document.activeElement.tagName === 'INPUT') return;
-    switch(e.code) {
-      case 'Space': case 'KeyK': e.preventDefault(); togglePlay(); break;
-      case 'ArrowLeft': if(player) player.seekTo(player.getCurrentTime() - 5); break;
-      case 'ArrowRight': if(player) player.seekTo(player.getCurrentTime() + 5); break;
-      case 'KeyM': 
-        if(player) {
-          if(player.isMuted()) { player.unMute(); showToast("🔊 음소거 해제"); }
-          else { player.mute(); showToast("🔇 음소거"); }
-        }
-        break;
-    }
-  });
-
-  function openQueue(){ $('backdrop').classList.add('visible'); $('sheet').classList.add('open'); renderQueue(); }
-  function closeQueue(){ $('backdrop').classList.remove('visible'); $('sheet').classList.remove('open'); }
-  function renderQueue(){
-    const b=$('qBody'); b.innerHTML='';
-    if(!queue.length) { b.innerHTML='<div class="center-msg" style="padding:20px">대기열이 비었습니다.</div>'; return; }
-    let h='';
-    queue.forEach((v,i)=>{
-      h+=`<div class="q-item ${i===queueIndex?'active':''}" onclick="playVideo(${i});closeQueue()">
-        <img src="${v.thumb}" style="width:50px;height:28px;object-fit:cover;border-radius:4px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(v.title)}</div>
-          <div style="font-size:11px;color:var(--sub)">${escapeHtml(v.channelTitle)}</div>
+            <div class="modal-btns">
+                <button class="cancel" onclick="closeKeywordModal()">닫기</button>
+            </div>
         </div>
-      </div>`;
-    });
-    b.innerHTML=h;
-  }
+    </div>
 
-  function openMenu(e,i){ e.stopPropagation(); menuTargetIdx=i; const m=$('menu'); m.style.left=(e.clientX-160)+'px'; m.style.top=e.clientY+'px'; $('menuBg').style.display='block'; m.classList.add('visible'); }
-  function closeMenu(){ $('menuBg').style.display='none'; $('menu').classList.remove('visible'); }
-  function menuAction(a){
-    const v=currentData[menuTargetIdx]; if(!v)return;
-    if(a==='addQueue'){ queue.push(v); showToast("➕ 대기열에 추가됨"); }
-    if(a==='playNext'){ queue.splice(queueIndex+1,0,v); showToast("⏭ 다음 재생 예약됨"); }
-    if(a==='hideVideo'){ blockedVideos.add(v.id); localStorage.setItem('yt_block_v',JSON.stringify([...blockedVideos])); showToast("🚫 영상 숨김 처리됨"); }
-    if(a==='hideChannel'){ blockedChannels.add(v.channelId); localStorage.setItem('yt_block_c',JSON.stringify([...blockedChannels])); showToast("🚫 채널 차단됨"); }
-    if(a==='copyUrl'){ navigator.clipboard.writeText(`https://youtu.be/${v.id}`); showToast("🔗 링크 복사완료"); }
-    closeMenu();
-  }
-  function showLikes(){ currentData=[...myLikes.values()]; queue=[...currentData]; $('results').innerHTML=''; renderResults(currentData,false); $('status').innerText=`보관함 ${currentData.length}`; $('loadMore').style.display='none'; closePlayer(); }
-  function toggleLike(e,id,i){ e.stopPropagation(); const b=e.currentTarget; if(myLikes.has(id)){myLikes.delete(id);b.classList.remove('liked');}else{const v=currentData.find(x=>x.id===id);if(v){myLikes.set(id,v);b.classList.add('liked');}} localStorage.setItem('yt_my_likes',JSON.stringify([...myLikes.values()])); }
-</script>
+    <div id="ambient-bg"></div>
+    <div id="ambient-overlay"></div>
+    <div id="scrollProgressBar"></div>
+    <div id="particles"></div>
+    <div id="idleOverlay"></div>
+    <div id="safeZone"></div>
+    <div id="suggestBox"></div>
+    <input type="file" id="uploadFile" style="display:none" onchange="handleFileSelect(event)" accept=".json">
+
+    <header>
+        <button class="custom-trigger" id="regionTrigger" onclick="toggleCommonMenu(event, 'region', this)"
+            style="padding: 0 14px;">
+            <img id="regionIcon" src="https://flagcdn.com/w40/kr.png"
+                style="width: 22px; height: 16px; border-radius: 2px; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+        </button>
+        <input type="hidden" id="region" value="KR">
+
+        <button class="custom-trigger" id="catTrigger" onclick="toggleCatMenu(event, this)" style="min-width: 150px;">
+            <div style="display:flex;align-items:center;gap:8px;pointer-events:none;">
+                <svg id="curCatIcon" viewBox="0 0 24 24">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                </svg>
+                <span id="curCatText">음악 (Music)</span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"
+                style="pointer-events:none; margin-left: auto;">
+                <path d="M7 10l5 5 5-5z" />
+            </svg>
+        </button>
+
+        <button class="custom-trigger" id="goalTrigger" onclick="toggleCommonMenu(event, 'goal', this)"
+            style="min-width: 120px;">
+            <svg viewBox="0 0 24 24">
+                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+            </svg>
+            <span id="goalText">관련성</span>
+        </button>
+        <input type="hidden" id="goal" value="ref">
+
+        <button class="custom-trigger" id="durationTrigger" onclick="toggleCommonMenu(event, 'duration', this)"
+            style="min-width: 110px;">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+            </svg>
+            <span id="durText">전체 길이</span>
+        </button>
+        <input type="hidden" id="duration" value="any">
+        <div class="sep"></div>
+        <label class="radio-label" title="고음질 필터 적용">
+            <input type="checkbox" id="hqMode" class="radio-chk"> <span>✨ HQ</span>
+        </label>
+
+        <div class="sep"></div>
+        <div id="searchBox" style="position:relative; flex:1; display:flex; align-items:center;">
+            <input id="keyword" placeholder="검색어 입력..." onkeydown="handleSearchKeydown(event)"
+                oninput="handleInput(this)" onfocus="handleFocus(this)"
+                onblur="setTimeout(()=>$('suggestBox').classList.remove('visible'), 250)"
+                style="width:100%; padding-right: 40px;" /> <button onclick="clearSearch()" class="close-icon"
+                title="검색어 지우기">✕</button>
+        </div>
+
+        <button class="icon-btn" onclick="searchVideos(true)" title="검색">
+            <svg class="btn-svg" viewBox="0 0 24 24">
+                <path
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
+        </button>
+        <button class="icon-btn refresh-btn" onclick="searchVideos(true, false, true)" title="새로고침">
+            <svg class="btn-svg" viewBox="0 0 367.136 367.136" fill="none" stroke="currentColor" stroke-width="0.7"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M336.554,86.871c-11.975-18.584-27.145-34.707-44.706-47.731L330.801,0H217.436v113.91L270.4,60.691
+            c40.142,28.131,65.042,74.724,65.042,124.571c0,83.744-68.13,151.874-151.874,151.874S31.694,269.005,31.694,185.262
+            c0-58.641,32.781-111.009,85.551-136.669l-13.119-26.979C73.885,36.318,48.315,59.1,30.182,87.494
+            c-18.637,29.184-28.488,62.991-28.488,97.768c0,100.286,81.588,181.874,181.874,181.874s181.874-81.588,181.874-181.874
+            C365.442,150.223,355.453,116.201,336.554,86.871z" />
+            </svg>
+        </button>
+
+
+        <div class="sep"></div>
+
+        <button class="icon-btn" onclick="toggleHeaderMenu()" title="설정 메뉴">
+            <svg class="btn-svg" viewBox="0 0 24 24">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+            </svg>
+        </button>
+
+        <div class="sep"></div>
+        <span id="likeCountTag" onclick="toggleLikesView()"
+            style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px; padding: 0 8px;">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg> <b>0</b>
+        </span>
+        <div class="sep"></div>
+        <div class="view-toggle-container">
+            <div class="view-slider" id="viewSlider"></div>
+            <!-- Grid Mode Btn -->
+            <button class="view-btn active" onclick="setViewMode('grid')" id="btnGrid" title="격자 뷰">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z" />
+                </svg>
+            </button>
+            <!-- Rich List Mode Btn -->
+            <button class="view-btn" onclick="setViewMode('list')" id="btnList" title="리스트 뷰">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+    <div id="bottomShadow"></div>
+
+    <div id="trendBar">
+        <div style="display:flex;justify-content:space-between;color:var(--sub);font-size:11px;margin-bottom:6px">
+            <svg class="trend-icon" viewBox="0 0 24 24">
+                <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z" />
+            </svg>
+            <div>
+                <span id="trendTime" style="margin-right:6px"></span>
+                <button
+                    style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.1);color:var(--text);border:0"
+                    onclick="closeTrendBar()">닫기</button>
+            </div>
+        </div>
+        <div class="trend-list" id="trendList"></div>
+    </div>
+
+    <div id="seedInfo"
+        style="text-align:center;padding:12px;margin-bottom:24px;display:none;color:rgba(255,255,255,0.9);font-size:14px;background:rgba(255,255,255,0.05);border-radius:16px; border:1px solid var(--glass-border); backdrop-filter: blur(1px);">
+    </div>
+
+    <div id="results" class="view-container"></div>
+    <div id="likesResults" class="view-container" style="display:none;"></div>
+
+
+    <div id="scrollAnchor"
+        style="height:80px;display:flex;justify-content:center;align-items:center;font-size:12px;color:rgba(255,255,255,0.3)">
+    </div>
+    <div id="cinemaOverlay" onclick="toggleCinemaMode()"></div>
+    <div id="mini">
+        <div class="mn-left">
+            <button class="mn-btn" onclick="prev()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                </svg>
+            </button>
+            <button class="mn-btn" id="playBtn" onclick="togglePlay()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+            </button>
+            <button class="mn-btn" onclick="next()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="mn-center-pill" onclick="goToPlayback()">
+            <div class="mn-thumb" id="miniThumb"></div>
+            <div class="mn-text-area">
+                <div class="marquee-container">
+                    <div class="marquee-wrapper paused" id="marqueeWrap">
+                        <div class="mn-title">Ready</div>
+                    </div>
+                </div>
+                <div class="mn-fixed-sub" id="miniSub">Music</div>
+            </div>
+
+            <div class="mn-progress-pill" id="seek" onclick="event.stopPropagation(); seekVideo(event)">
+                <div class="mn-bar" id="seekFill"></div>
+            </div>
+        </div>
+
+        <button class="mn-menu-btn" onclick="openMenu(event, queueIndex)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="overflow: visible;">
+                <circle cx="5" cy="12" r="2" fill="white" />
+                <circle cx="12" cy="12" r="2" fill="white" />
+                <circle cx="19" cy="12" r="2" fill="white" />
+            </svg>
+        </button>
+
+        <div class="mn-right">
+            <div class="mn-vol-container" id="volContainer">
+                <input type="range" id="volSlider" min="0" max="100" value="100" oninput="setVolume(this.value)">
+                <button class="mn-vol-btn" onclick="toggleVolume()" title="볼륨">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="menuBg" style="position:fixed;inset:0;z-index:9000;display:none" onclick="closeMenu()"></div>
+
+    <div id="catMenu" class="popup-menu"></div>
+    <div id="commonMenu" class="popup-menu"></div>
+
+    <div id="menu">
+        <div class="menu-item" onclick="menuAction('exploreChannel')"><svg viewBox="0 0 24 24">
+                <path
+                    d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />
+                <path
+                    d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"
+                    fill="none" />
+            </svg> 이 채널 탐색</div>
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:4px 0"></div>
+
+        <div class="menu-item" onclick="menuAction('playNext')"><svg viewBox="0 0 24 24">
+                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+            </svg> 바로 다음 재생</div>
+        <div class="menu-item" onclick="menuAction('addQueue')"><svg viewBox="0 0 24 24">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg> 대기열 추가</div>
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:4px 0"></div>
+        <div class="menu-item" onclick="menuAction('hideVideo')"><svg viewBox="0 0 24 24">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z" />
+            </svg> 이 영상 숨김</div>
+        <div class="menu-item" onclick="menuAction('blockChannel')"><svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z" />
+            </svg> 채널 차단</div>
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:4px 0"></div>
+        <div class="menu-item" onclick="menuAction('copyUrl')"><svg viewBox="0 0 24 24">
+                <path
+                    d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
+            </svg> 링크 복사</div>
+    </div>
+
+    <div id="toast"></div>
+    <div id="statsHUD" class="popup-menu">
+        <div class="stat-title-text">PLAYER STATUS</div>
+
+        <div class="stat-box">
+            <span class="stat-label">누적 시청 시간</span>
+            <span class="stat-value" id="statWatchTime">0시간 0분</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">완독한 영상</span>
+            <span class="stat-value" id="statCompleted">0편</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">보관함 좋아요</span>
+            <span class="stat-value" id="statLikes">0개</span>
+        </div>
+
+        <div style="color:var(--sub); font-size:12px; margin-top:20px;">현재 칭호</div>
+        <div class="stat-badge" id="statTitleBadge">뉴비 탐험가 🔰</div>
+    </div>
+
+
+    <div id="headerMenu">
+        <div class="hm-group open">
+            <div class="hm-group-title" onclick="toggleMenuFold(this)">🎬 재생 및 화면 설정 <span class="fold-arrow">▼</span>
+            </div>
+            <div class="hm-group-content">
+                <div class="hm-item" onclick="toggleMiniPlayerVisibility()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8 15c0-1.66 1.34-3 3-3 .35 0 .69.07 1 .18V6h5v2h-3v7.03c-.02 1.64-1.35 2.97-3 2.97-1.66 0-3-1.34-3-3z" />
+                        </svg></span> <span id="miniPlayerToggleText">미니플레이어 ON</span>
+                </div>
+                <div class="hm-item" onclick="toggleNetworkHUD()">
+                    <span class="hm-icon">📶</span> <span id="networkHUDToggleText">네트워크 상태 OFF</span>
+                </div>
+                <div class="hm-item" onclick="toggleAlwaysOnTop()">
+                    <span class="hm-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+                        </svg>
+                    </span>
+                    <span id="alwaysOnTopToggleText">항상 위 고정 OFF</span>
+                </div>
+                <div class="hm-item" onclick="toggleAutoIdleMode()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-12c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" />
+                        </svg></span> <span id="autoIdleToggleText">자동 몰입 모드 ON</span>
+                </div>
+                <div class="hm-item" onclick="toggleCinemaMode()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z" />
+                        </svg></span> <span id="cinemaToggleText">시네마 모드 켜기</span>
+                </div>
+                <div class="hm-item" onclick="shuffleQueue()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" />
+                        </svg></span> 셔플 재생
+                </div>
+                <div class="hm-item" id="sleepMenuItem" onclick="toggleSleepTimer()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                        </svg></span> <span id="sleepText">취침 타이머</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hm-group">
+            <div class="hm-group-title" onclick="toggleMenuFold(this)">🎨 UI 및 테마 설정 <span class="fold-arrow">▼</span>
+            </div>
+            <div class="hm-group-content">
+                <div class="hm-item" onclick="toggleTrendBarVisibility()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z" />
+                        </svg></span> <span id="trendBarToggleText">트렌드 바 ON</span>
+                </div>
+                <div class="hm-item" onclick="toggleExtraInfoVisibility()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z" />
+                        </svg></span> <span id="extraInfoToggleText">설명/댓글 ON</span>
+                </div>
+                <div class="hm-item" onclick="cycleHeaderOpacity()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+                        </svg></span> 상단바 투명도
+                </div>
+                <div class="hm-item" onclick="cycleOpacity()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.11 2.34 5.67 3.61 2.35 5.66 2.35 4.1-.79 5.66-2.35S20 15.64 20 13.64 19.22 9.56 17.66 8zM6 14c.01-2 .62-3.27 1.76-4.4L12 5.27l4.24 4.38C17.38 10.77 17.99 12 18 14H6z" />
+                        </svg></span> 플레이어 투명도
+                </div>
+                <div class="hm-item" style="position:relative">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                        </svg></span> 테마 색상 변경
+                    <input type="color" id="themePicker" onchange="handleThemeChange(this)"
+                        style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+                    <div id="themePreview"
+                        style="width:16px; height:16px; border-radius:50%; background:var(--accent); margin-left:auto; border:2px solid #fff;">
+                    </div>
+                </div>
+
+                <div class="hm-item" onclick="toggleStatsHUD()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                        </svg></span> 플레이어 스탯 (HUD)
+                </div>
+            </div>
+        </div>
+
+        <div class="hm-group">
+            <div class="hm-group-title" onclick="toggleMenuFold(this)">💾 데이터 및 관리 <span class="fold-arrow">▼</span>
+            </div>
+            <div class="hm-group-content">
+                <div class="hm-item" onclick="openKeywordModal()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z" />
+                        </svg></span> 차단 키워드 관리
+                </div>
+                <div class="hm-item" onclick="openApiKeyModal(true)">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path
+                                d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
+                        </svg></span> API 키 변경/설정
+                </div>
+                <div class="hm-item" onclick="exportData()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg></span> 백업 (저장)
+                </div>
+                <div class="hm-item" onclick="triggerImport()">
+                    <span class="hm-icon"><svg viewBox="0 0 24 24">
+                            <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" />
+                        </svg></span> 복구 (불러오기)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 네트워크 상태 바 -->
+    <div id="networkStatusHUD" class="network-hud" style="display: none;"></div>
+
+    <script src="js/state.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/app.js"></script>
 </body>
+
 </html>

@@ -1,0 +1,247 @@
+        /* 1. 디자인 시스템 */
+        :root {
+            --bg: #050505;
+            --card: rgba(30, 30, 30, 0.6);
+            --text: #fff;
+            --sub: rgba(255, 255, 255, .6);
+            --accent: #a855f7;
+            --brand: #ff0033;
+            --hq-color: #00d2ff;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.1);
+
+            /* 맥 스타일 메뉴 배경색 */
+            --mac-bg: rgba(35, 35, 35, 0.85);
+            --mac-border: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            /* 👇 위 6px, 우 15px, 아래 120px, 좌 15px */
+            padding: 6px 15px 120px 15px;
+
+            font-family: -apple-system, BlinkMacSystemFont, "Pretendard", Roboto, sans-serif;
+            background: #000000;
+            /* 까만 배경 유지 */
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* 배경 효과 (숨김 및 완전한 검은색 적용) */
+        body {
+            background-color: #000000 !important;
+        }
+
+        #ambient-bg,
+        #ambient-overlay,
+        #particles,
+        .particle {
+            display: none !important;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate3d(0, 0, 0) rotate(0deg);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translate3d(0, -100vh, 0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 4px;
+            position: relative;
+        }
+
+        /* 공통 아이콘 스타일 */
+        .icon-svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .btn-svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+
+        header {
+            position: sticky !important;
+            top: 0 !important;
+            left: 0 !important;
+
+            /* 👇 좌우 여백 15px을 상쇄하기 위해 양옆 마진을 -15px로 설정 */
+            margin: -6px -15px 16px -15px !important;
+            /* 👇 15px + 15px = 30px을 더해줘서 화면에 꽉 차게 만듭니다 */
+            width: calc(100% + 30px) !important;
+
+            height: 65px !important;
+            padding: 0 20px 0 80px !important;
+            box-sizing: border-box !important;
+            /* ... 아래 나머지 코드는 그대로 유지 ... */
+
+            border-radius: 0 !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+            background: rgba(0, 0, 0, 0.15) !important;
+            border: none !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+            backdrop-filter: blur(20px) saturate(150%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            white-space: nowrap;
+            overflow-x: auto;
+            -webkit-app-region: drag;
+        }
+
+        header::-webkit-scrollbar {
+            display: none;
+        }
+
+        header * {
+            -webkit-app-region: no-drag;
+        }
+
+        /* 👇 [누락되었던 핵심 코드] 드래그 영역 안에서도 클릭이 씹히지 않도록 강제 보호 */
+        .custom-trigger,
+        .icon-btn,
+        .refresh-btn,
+        .radio-label,
+        #keyword,
+        .close-icon,
+        #likeCountTag {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+
+        .custom-trigger {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            height: 40px;
+            padding: 0 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: 0.2s;
+            white-space: nowrap;
+            min-width: auto;
+        }
+
+        .custom-trigger:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .custom-trigger svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            opacity: 0.9;
+        }
+
+        .custom-trigger span {
+            pointer-events: none;
+        }
+
+        input {
+            background: var(--glass);
+            border: 0;
+            color: var(--text);
+            height: 40px;
+            padding: 0 14px;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+
+        #keyword {
+            flex: 1;
+            min-width: 100px;
+            text-align: left;
+        }
+
+        button.icon-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+        }
+
+        button.icon-btn:hover {
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .refresh-btn {
+            width: 25px !important;
+            /* 기본 버튼 크기로 복구 */
+            height: 25px !important;
+            background: transparent !important;
+            border: none !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            /* 옆 아이콘들과 투명도 일치 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none !important;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .refresh-btn:hover {
+            color: #ffffff !important;
+            transform: rotate(360deg);
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 50%;
+        }
+
+        .refresh-btn svg {
+            /* 원래 크기인 22px로 복구하여 전체적인 통일감을 줍니다. */
+            width: 15px;
+            height: 15px;
+        }
+
+        .sep {
+            width: 1px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 2px;
+            flex-shrink: 0;
+        }
+

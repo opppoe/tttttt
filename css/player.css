@@ -1,0 +1,448 @@
+        /* --- 🌙 자동 몰입(Idle) 모드 (고급 블러 버전 - 한방에 팍! 복귀) --- */
+        /* 1. 블러 오버레이 */
+        #idleOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1500;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            opacity: 0;
+
+            /* 🎯 [여기 수정됨] 복귀할 때는 0초! (즉시 사라져서 깜박임 원천 차단) */
+            transition: opacity 0s;
+        }
+
+        body.is-idle #idleOverlay {
+            opacity: 1;
+            /* 🎯 몰입 모드 들어갈 때만 1.5초 스르륵 */
+            transition: opacity 1.5s ease;
+        }
+
+        /* 2. 주변 UI 클릭 방지 */
+        body.is-idle header,
+        body.is-idle .u-card,
+        body.is-idle #trendBar {
+            pointer-events: none;
+        }
+
+        /* 3. 플레이어 블록 끌어올리기 */
+        body.is-idle .player-block {
+            position: relative;
+            z-index: 1600 !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: none !important;
+            border: none !important;
+            /* 들어갈 때만 스르륵 */
+            transition: all 1.5s ease;
+        }
+
+        /* 4. 공중에 뜬 영상 프레임 자체 그림자 */
+        body.is-idle .player-frame {
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            transition: box-shadow 1.5s ease;
+        }
+
+        /* 5. 영상 아래에 붙어있는 설명란/댓글란 숨기기 */
+        body.is-idle .info-toggle-bar,
+        body.is-idle #extraInfoContainer {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transition: opacity 1.5s ease;
+        }
+
+        /* 6. 무지개 파도(비주얼라이저) 구출 */
+        body.is-idle #waveVisualizer {
+            z-index: 1550 !important;
+            filter: drop-shadow(0 -5px 15px rgba(168, 85, 247, 0.4));
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0) 100%);
+            transition: filter 1.5s ease, background 1.5s ease;
+        }
+
+        /* 🎯 7. 복귀 시 0초 만에 팍! 나타나도록 기본 트랜지션 초기화 */
+        header,
+        #results,
+        #likesResults,
+        #trendBar,
+        .info-toggle-bar,
+        #extraInfoContainer {
+            transition: opacity 0s !important;
+        }
+
+        /* 🎯 유튜브 플레이어 자체의 배경과 테두리 제거 */
+        #playerContainer,
+        #videoPlayer,
+        iframe {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .player-block {
+            grid-column: 1 / -1;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 24px;
+            overflow: hidden;
+            margin: 16px 0;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideOpen 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0s !important;
+        }
+
+        /* 🎯 [선택사항] 만약 하단 컨트롤바를 은은하게 만들고 싶다면 */
+        /* 이 부분은 iframe 내부라서 직접 제어가 어려울 수 있지만, 
+   부모 컨테이너에 아래와 같이 그림자를 주면 플레이어와 앱이 더 잘 어우러집니다. */
+        .player-frame {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            /* 모서리 둥글게 */
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+            /* 깊이감 있는 그림자 */
+            transition: box-shadow 0s;
+        }
+
+        /* index.html <style> 태그 내 추가 */
+        #playerHost {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        /* --- 💬 설명 및 댓글 완전 숨김 모드 --- */
+        body.hide-extrainfo .info-toggle-bar,
+        body.hide-extrainfo #extraInfoContainer {
+            display: none !important;
+        }
+
+        /* --- 🎨 커스텀 플레이어 글래스모피즘 UI --- */
+        .player-frame {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+            transition: border-radius 0.3s, box-shadow 1.5s ease;
+        }
+
+        /* --- 📺 완벽한 웹 풀스크린 (CSS 트랩 해제 버전) --- */
+        body.is-fullscreen {
+            overflow: hidden !important;
+        }
+
+        /* 1. 멱살 잡고 있던 부모 상자(playerBlock) 자체를 화면 전체로 키움 */
+        body.is-fullscreen #playerBlock {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            z-index: 999999 !important;
+            /* 모든 것을 덮음 */
+            margin: 0 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            background: #000 !important;
+
+            /* 🔥 핵심: 화면을 뚫고 나가지 못하게 막던 효과들 강제 해제 */
+            transform: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            animation: none !important;
+        }
+
+        /* 2. 영상 프레임의 비율(16:9) 및 높이 제한 강제 해제 */
+        body.is-fullscreen #customPlayerFrame {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-height: none !important;
+            aspect-ratio: auto !important;
+            border-radius: 0 !important;
+        }
+
+        /* 3. 전체화면일 때 다른 요소들 깔끔하게 숨김 */
+        body.is-fullscreen header,
+        body.is-fullscreen #trendBar,
+        body.is-fullscreen #mini,
+        body.is-fullscreen #scrollProgressBar,
+        body.is-fullscreen .info-toggle-bar,
+        body.is-fullscreen #extraInfoContainer {
+            display: none !important;
+        }
+
+        /* 유튜브 영상 클릭 방어막 (영상을 직접 눌러서 재생/정지하게 만듦) */
+        .c-click-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            bottom: 60px;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        /* 커스텀 컨트롤러 바 본체 (블러 제거, 깔끔하고 선명한 어둠) */
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+
+            /* 블러가 사라진 대신 버튼이 잘 보이도록 밑에서부터 자연스럽게 어두워지는 그라데이션 */
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+
+            /* 🎯 문제의 블러(유리 효과) 완전히 삭제 */
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 16px 12px 16px;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        /* 마우스가 움직일 때만 UI 표시 */
+        .player-frame.active-controls .custom-controls {
+            opacity: 1;
+        }
+
+        /* 커스텀 진행률 바 */
+        .c-progress-area {
+            width: 100%;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+
+        .c-progress-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+            transition: height 0.2s;
+        }
+
+        .c-progress-area:hover .c-progress-track {
+            height: 8px;
+        }
+
+        .c-progress-fill {
+            height: 100%;
+            background: var(--hq-color, #00d2ff);
+            width: 0%;
+            box-shadow: 0 0 12px var(--hq-color, #00d2ff);
+            transition: width 0.1s linear;
+        }
+
+        /* 하단 버튼 및 시간 텍스트 */
+        .c-controls-bottom {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .c-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            width: 34px;
+            height: 34px;
+            padding: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            opacity: 0.85;
+        }
+
+        .c-btn:hover {
+            opacity: 1;
+            transform: scale(1.15);
+            color: var(--hq-color, #00d2ff);
+        }
+
+        .c-btn svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        .c-time {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        /* --- 아코디언 메뉴 전용 스타일 --- */
+        .hm-group {
+            margin-bottom: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            transition: background 0.3s;
+        }
+
+        .hm-group-title {
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--sub);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .hm-group-title:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .fold-arrow {
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            font-size: 11px;
+        }
+
+        /* 열렸을 때의 스타일 */
+        .hm-group.open {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .hm-group.open .fold-arrow {
+            transform: rotate(180deg);
+        }
+
+        .hm-group.open .hm-group-title {
+            color: var(--hq-color, #00d2ff);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 내부 콘텐츠 스르륵 열리는 애니메이션 */
+        .hm-group-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .hm-group.open .hm-group-content {
+            max-height: 500px;
+            /* 항목이 들어갈 만큼 넉넉하게 설정 */
+        }
+
+        .hm-group-content .hm-item {
+            border-radius: 0;
+            margin: 0;
+            padding: 10px 14px 10px 24px;
+            /* 항목들을 살짝 들여쓰기 */
+            background: transparent;
+        }
+
+        /* --- 📌 진정한 PIP 모드 (UI 숨기고 영상만 꽉 채우기) 최종본 --- */
+        body.is-pip {
+            overflow: hidden !important;
+            background: #000 !important;
+        }
+
+        body.is-pip::after {
+            display: none !important;
+        }
+
+        /* 바닥 그림자 제거 */
+
+        /* 1. 영상 블록을 창 전체로 꽉 채움 (유리 질감 배경 제거) */
+        body.is-pip #playerBlock {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 999999 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            background: #000 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        /* 🚨 핵심: 여백 발생 원인 해결 (16:9 비율 강제 해제) */
+        body.is-pip #customPlayerFrame {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-height: none !important;
+            aspect-ratio: auto !important;
+            /* 비율 강제 해제하여 꽉 채움 */
+            border-radius: 0 !important;
+            background: #000 !important;
+        }
+
+        /* 2. PIP 상태일 때 거추장스러운 UI 완벽 숨김 */
+        body.is-pip header,
+        body.is-pip #trendBar,
+        body.is-pip #mini,
+        body.is-pip .info-toggle-bar,
+        body.is-pip #extraInfoContainer,
+        body.is-pip #ambient-bg,
+        body.is-pip #particles,
+        body.is-pip #headerMenu,
+        body.is-pip #menuBg,
+        body.is-pip #scrollProgressBar,
+        body.is-pip #bottomShadow,
+        body.is-pip #spectrumOverlay {
+            display: none !important;
+        }
+
+        /* 3. 🤏 미니 창 드래그 손잡이 (마우스를 올렸을 때만 상단에 나타남) */
+        body.is-pip #playerBlock::before {
+            content: '🤏 드래그하여 이동 (ESC로 복구)';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 40px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 10px;
+            z-index: 9999999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            -webkit-app-region: drag;
+            /* 일렉트론 창 드래그 가능 영역 */
+        }
+
+        body.is-pip #playerBlock:hover::before {
+            opacity: 1;

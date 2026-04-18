@@ -1,0 +1,2323 @@
+        /* 팝업 메뉴 공통 */
+        .popup-menu {
+            position: fixed;
+            background: rgba(30, 30, 30, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 12px;
+            overflow: visible !important;
+            visibility: hidden;
+            opacity: 0;
+            transform: scale(0.95);
+            z-index: 20000;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s, visibility 0.2s;
+        }
+
+        .popup-menu.visible {
+            visibility: visible;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .popup-menu::before {
+            content: "";
+            position: absolute;
+            top: -8px;
+            left: var(--origin-x, 20px);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid rgba(255, 255, 255, 0.2);
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .popup-menu::after {
+            content: "";
+            position: absolute;
+            top: -7px;
+            left: var(--origin-x, 20px);
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 7px solid rgba(30, 30, 30, 0.75);
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 카테고리 메뉴 */
+        #catMenu {
+            display: block !important;
+            padding: 12px !important;
+            width: 740px;
+            max-width: 95vw;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
+        #catMenu::-webkit-scrollbar {
+            display: none;
+        }
+
+        #catMenu .cat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+            background: transparent;
+            padding: 10px 4px;
+            aspect-ratio: 1 / 1.1;
+        }
+
+        #catMenu .cat-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #catMenu .cat-item.active-cat {
+            background: rgba(255, 255, 255, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        #catMenu .cat-item svg {
+            width: 36px;
+            height: 36px;
+            fill: currentColor;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+        }
+
+        #catMenu .cat-item span {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 2px;
+            font-size: 12px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        .cat-group-label {
+            grid-column: 1 / -1;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 4px 8px;
+            font-weight: 700;
+            margin-top: 10px;
+            margin-bottom: 4px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cat-group-label:first-child {
+            margin-top: 0;
+        }
+
+        /* 헤더 메뉴 */
+        /* 1. 기존 헤더 메뉴에 최대 높이와 스크롤 속성 추가 */
+        #headerMenu {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 10000;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95) translateY(-10px);
+            transform-origin: top right;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+            /* 👇 [여기서부터 핵심] 화면 높이에 맞춰 메뉴 길이를 자르고 스크롤을 만듭니다 */
+            max-height: calc(100vh - 100px);
+            /* 화면 전체 높이에서 위아래 여백을 뺌 */
+            overflow-y: auto;
+            /* 내용이 넘치면 세로 스크롤 생성 */
+        }
+
+        /* 2. 스크롤바 디자인 예쁘게 다듬기 (투명하고 얇게) */
+        #headerMenu::-webkit-scrollbar {
+            width: 6px;
+            /* 스크롤바 굵기 */
+        }
+
+        #headerMenu::-webkit-scrollbar-track {
+            background: transparent;
+            /* 스크롤바 배경은 투명하게 */
+            margin-top: 8px;
+            /* 위아래 약간 여백 */
+            margin-bottom: 8px;
+        }
+
+        #headerMenu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            /* 반투명한 흰색 막대기 */
+            border-radius: 10px;
+            /* 동글동글하게 */
+        }
+
+        #headerMenu::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+            /* 마우스 올리면 조금 더 진하게 */
+        }
+
+        #headerMenu.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1) translateY(0);
+        }
+
+        .hm-item {
+            padding: 12px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .hm-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(2px);
+        }
+
+        .hm-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--sub);
+        }
+
+        .hm-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        .hm-item:hover .hm-icon {
+            color: var(--accent);
+        }
+
+        /* 검색 제안 */
+        #suggestBox {
+            position: fixed;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            z-index: 5000;
+            display: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        #suggestBox.visible {
+            display: block;
+            animation: popDown 0.2s ease;
+        }
+
+        @keyframes popDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .s-item {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .s-item:hover,
+        .s-item.selected {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .s-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .s-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .s-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        .s-del {
+            color: #aaa;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            visibility: hidden;
+            cursor: pointer;
+        }
+
+        .s-item:hover .s-del {
+            visibility: visible;
+        }
+
+        body::after {
+            /* (상단 속성들 유지) */
+            content: '' !important;
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 140px !important;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 40%, rgba(0, 0, 0, 0) 100%) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            mask-image: none !important;
+            -webkit-mask-image: none !important;
+            pointer-events: none !important;
+
+            z-index: 997 !important;
+            transition: height 1.5s ease, z-index 0s 1.5s !important;
+            /* 나올 때 지연 */
+        }
+
+        /* 4초 뒤 자동 몰입 모드 시 그림자 높이 확장 */
+        body.is-idle::after {
+            z-index: 1549 !important;
+            height: 180px !important;
+            transition: height 1.5s ease, z-index 0s !important;
+            /* 들어갈 때 즉시 */
+        }
+
+
+        /* Segmented Control - Mac OS Style Toggle */
+        .view-toggle-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 3px;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .view-slider {
+            position: absolute;
+            top: 3px;
+            bottom: 3px;
+            left: 3px;
+            width: calc(50% - 2px);
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .view-btn {
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            width: 38px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .view-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            pointer-events: none;
+        }
+
+        .view-btn.active {
+            color: #fff;
+        }
+
+        .view-btn:hover:not(.active) {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* State Positions for slider */
+        .view-toggle-container[data-mode="grid"] .view-slider {
+            transform: translateX(0);
+        }
+
+        .view-toggle-container[data-mode="list"] .view-slider {
+            transform: translateX(100%);
+        }
+
+        /* Rich List specific info alignments */
+        .u-desc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .view-container:not(.list-mode) .u-desc {
+            display: none;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.3s;
+            margin-left: auto;
+            padding-left: 16px;
+            align-items: center;
+        }
+
+        .view-container:not(.list-mode) .quick-actions {
+            display: none;
+        }
+
+        .u-card:hover .quick-actions {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .qa-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .qa-btn:hover {
+            background: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .qa-btn.play {
+            background: #fff;
+            color: #000;
+        }
+
+        .qa-btn.play:hover {
+            background: #e0e0e0;
+        }
+
+        /* --- 스펙트럼 오버레이 수정 (HTML 맨 아래 <style> 태그 안) --- */
+        #spectrumOverlay {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 50px !important;
+
+            /* 기존의 진한 그라데이션을 걷어내고 은은하게 변경 */
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 100%) !important;
+
+            pointer-events: none !important;
+            z-index: 999 !important;
+        }
+
+        /* 자동 몰입 모드 시에도 블러 오버레이 위로 구출 */
+        body.is-idle #spectrumOverlay {
+            z-index: 1650 !important;
+        }
+
+
+
+        /* --- 📉 2. 트렌드 바 본체 복구 --- */
+        #trendBar {
+            display: flex !important;
+            flex-direction: row;
+            align-items: flex-end;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+
+            /* 🎯 배경 그라데이션은 bottomShadow가 담당하므로, 여기선 투명하게! */
+            background: transparent !important;
+
+            backdrop-filter: none;
+            border: none;
+            z-index: 1000;
+            margin: 0;
+            padding: 15px 10px 5px 10px;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        #trendBar>* {
+            pointer-events: auto;
+        }
+
+
+
+        /* 내부 요소들은 다시 클릭 가능하도록 설정 */
+        #trendBar>* {
+            pointer-events: auto;
+        }
+
+        /* --- 맨 앞 아이콘 영역 레이아웃 --- */
+        #trendBar>div:first-child {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0 !important;
+            padding-right: 12px;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* 닫기 버튼 숨김 유지 */
+        #trendBar>div:first-child>div {
+            display: none;
+        }
+
+        /* --- SVG 아이콘: 기본 하얀 네온 상태 --- */
+        .trend-icon {
+            width: 22px;
+            height: 22px;
+            fill: rgba(255, 255, 255, 0.85);
+            /* 약간 투명한 하얀색 */
+            /* SVG는 text-shadow 대신 drop-shadow로 빛을 냅니다 */
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        /* --- SVG 아이콘: 마우스 올렸을 때 파란 네온 발광 --- */
+        #trendBar>div:first-child:hover .trend-icon {
+            fill: #ffffff;
+            /* 파란색 빛을 여러 겹 겹쳐서 강렬한 네온 효과 완성 */
+            filter: drop-shadow(0 0 3px #00d2ff) drop-shadow(0 0 8px #00d2ff);
+            transform: translateY(-2px) scale(1.1);
+            /* 위로 떠오르며 살짝 커짐 */
+        }
+
+        /* 닫기 버튼 숨김 유지 */
+        #trendBar>div:first-child>div {
+            display: none;
+        }
+
+        /* 제목에 마우스를 올렸을 때 파란색 네온 및 떠오르는 효과 */
+        #trendBar>div:first-child:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #00d2ff, 0 0 10px #00d2ff, 0 0 20px #00d2ff;
+            transform: translateY(-2px);
+        }
+
+        /* 가로 스크롤 리스트 영역 */
+        .trend-list {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+            /* 칩 사이 간격을 조금 넓혀서 깔끔하게 */
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            scrollbar-width: none;
+        }
+
+        .trend-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 2. 개별 키워드 버튼: 글자 크기 더 축소 */
+        .t-chip {
+            background: transparent;
+            border: none;
+            padding: 4px 6px;
+            font-size: 11px;
+            /* [수정됨] 12px -> 11px로 더 줄임 */
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+            margin-top: 10px;
+        }
+
+        /* 3. 마우스 올렸을 때 (파란색 네온 발광) */
+        .t-chip:hover {
+            color: #fff;
+            /* 파란색(var(--hq-color) 또는 #00d2ff)으로 강렬하게 빛남 */
+            text-shadow: 0 0 5px #00d2ff, 0 0 10px #00d2ff, 0 0 20px #00d2ff;
+            transform: translateY(-2px);
+            /* 마우스를 올리면 글자가 살짝 위로 떠오르는 효과 */
+        }
+
+        /* 3. 화려한 순위 숫자(1~3등): 뒤 글자와 크기 완전 통일 */
+        .gmgn-rank {
+            display: inline-block;
+            font-size: 11px;
+            /* [수정됨] 뒤의 글자와 동일한 11px로 축소 */
+            font-weight: 900;
+            font-style: italic;
+            position: relative;
+            overflow: hidden;
+            padding-right: 2px;
+            /* 숫자와 글자 사이 간격 살짝 */
+            transform: none;
+            /* [수정됨] 글자와 줄이 딱 맞도록 위치 보정 삭제 */
+        }
+
+        /* 4. 일반 순위 숫자(4~10등): 역시 뒤 글자와 크기 완전 통일 */
+        .t-rank-normal {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 800;
+            font-style: italic;
+            font-size: 11px;
+            /* [수정됨] 뒤의 글자와 동일한 11px로 축소 */
+            padding-right: 2px;
+        }
+
+        /* 카드 리스트 */
+        .view-container {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .view-container.list-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .u-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform-origin: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            animation: cardEntrance 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+        }
+
+        @keyframes cardEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .view-container:not(.list-mode) .u-card {
+            flex-direction: column;
+        }
+
+        .view-container:not(.list-mode) .u-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+        }
+
+        /* Rich List Mode */
+        .view-container.list-mode .u-card {
+            flex-direction: row;
+            height: 130px;
+            /* 고정 높이 여유 */
+            padding: 12px;
+            align-items: stretch;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .view-container.list-mode .u-thumb {
+            width: 180px;
+            /* 강제 너비 설정 */
+            min-width: 180px;
+            /* 강제 너비 설정 */
+            max-width: 180px;
+            /* 강제 너비 설정 */
+            height: 100%;
+            aspect-ratio: auto;
+            /* 비율 종속 해제 */
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        .u-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+        }
+
+        .u-card.active {
+            border: 1.5px solid var(--text);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .u-thumb {
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .u-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s;
+        }
+
+        .u-card:hover .u-thumb img {
+            transform: scale(1.05);
+        }
+
+        .u-dur {
+            position: absolute;
+            right: 6px;
+            bottom: 6px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 800;
+            backdrop-filter: blur(4px);
+            z-index: 11;
+        }
+
+        /* 진행률 바 트랙 (배경) */
+        .u-prog-track {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            /* 살짝 두껍게 조정 */
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        /* 실제 진행도를 나타내는 바 */
+        .u-prog-bar {
+            height: 100%;
+            background: #ff0000;
+            /* 유튜브의 시그니처 레드 */
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
+            /* 네온 효과 추가 */
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 시청 완료에 가까울 때 (예: 90% 이상) 색상 변화 (선택 사항) */
+        .u-prog-bar.completed {
+            background: #30d158;
+            /* 완료 시 녹색으로 변경하여 성취감 부여 */
+            box-shadow: 0 0 8px rgba(48, 209, 88, 0.6);
+        }
+
+        .u-like-btn {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: auto;
+            height: auto;
+            padding: 0;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.9);
+            z-index: 20;
+            transition: 0.2s;
+            opacity: 0;
+            transform: scale(0.9);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+        }
+
+        .u-card:hover .u-like-btn,
+        .view-container.list-mode .u-like-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .u-like-btn svg {
+            width: 26px;
+            height: 26px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        .u-like-btn.liked {
+            color: var(--brand);
+            opacity: 1 !important;
+            transform: scale(1.1);
+        }
+
+        .u-like-btn.liked svg {
+            fill: currentColor;
+            stroke: none;
+        }
+
+        .u-like-btn:hover {
+            transform: scale(1.2);
+            color: var(--brand);
+        }
+
+        .u-menu-btn {
+            position: absolute;
+            top: 8px;
+            left: 42px;
+            width: auto;
+            height: auto;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+            transition: 0.2s;
+            opacity: 0;
+            transform: scale(0.9);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+        }
+
+        .u-card:hover .u-menu-btn,
+        .view-container.list-mode .u-menu-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .u-menu-btn:hover {
+            color: var(--accent);
+            transform: scale(1.2) !important;
+        }
+
+        .u-menu-btn svg {
+            width: 26px;
+            height: 26px;
+            fill: currentColor;
+        }
+
+        .u-body {
+            padding: 16px;
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            position: relative;
+        }
+
+        .view-container.list-mode .u-body {
+            padding: 0;
+        }
+
+        .u-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 4px;
+            line-height: 1.3;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            min-height: 2.6em;
+        }
+
+        .view-container.list-mode .u-title {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+
+        .u-meta {
+            font-size: 12px;
+            color: var(--sub);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .u-channel-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--sub);
+            overflow: hidden;
+        }
+
+        .u-ch-img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #333;
+        }
+
+        .u-ch-name {
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+        }
+
+        .u-verified {
+            width: 14px;
+            height: 14px;
+            fill: var(--sub);
+            flex-shrink: 0;
+        }
+
+        .u-sub-count {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-left: 2px;
+        }
+
+        .tag-hot {
+            background: #ff3b30;
+            color: #fff;
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+
+        .tag-new {
+            background: #30d158;
+            color: #000;
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+
+        .tag-playlist {
+            background: var(--accent);
+            color: #fff;
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+
+        .player-block {
+            grid-column: 1 / -1;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            overflow: hidden;
+            margin: 16px 0;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideOpen 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: background 1.5s ease, box-shadow 1.5s ease, border 1.5s ease, backdrop-filter 1.5s ease, z-index 0s 1.5s;
+        }
+
+        @keyframes slideOpen {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .player-frame {
+            width: 100%;
+            aspect-ratio: 16/9;
+            max-height: 75vh;
+        }
+
+        #playerHost {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* 👇 드래그 위치를 기억하도록 CSS 변수(--drag-x, --drag-y)를 추가했습니다. */
+        #mini {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(calc(-50% + var(--drag-x, 0px))) translateY(calc(200% + var(--drag-y, 0px)));
+            width: 90%;
+            max-width: 400px;
+            height: 60px;
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 2000;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            cursor: grab;
+            /* 마우스 커서를 손바닥 모양으로 변경 */
+        }
+
+        #mini.visible {
+            transform: translateX(calc(-50% + var(--drag-x, 0px))) translateY(var(--drag-y, 0px));
+        }
+
+        .mn-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mn-btn {
+            background: transparent;
+            border: 0;
+            color: #fff;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.9;
+            transition: 0.2s;
+        }
+
+        .mn-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .mn-btn svg {
+            width: 100%;
+            height: 100%;
+            fill: #fff;
+        }
+
+        .mn-center-pill {
+            flex: 1;
+            margin: 0 4px 0 12px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mn-thumb {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+            margin-right: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .mn-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mn-thumb.playing img {
+            animation: spin 12s linear infinite;
+        }
+
+        .mn-thumb.paused img {
+            animation-play-state: paused !important;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .mn-text-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+
+        .marquee-wrapper {
+            display: inline-flex;
+            animation: marquee 15s linear infinite;
+        }
+
+        .marquee-wrapper.paused {
+            animation-play-state: paused !important;
+        }
+
+        .mn-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            padding-right: 40px;
+        }
+
+        .mn-fixed-sub {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .mn-menu-btn {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            opacity: 1 !important;
+            visibility: visible !important;
+            cursor: pointer;
+            border: 0;
+            background: transparent;
+            z-index: 2005;
+            flex-shrink: 0;
+            margin-right: 2px;
+        }
+
+        .mn-menu-btn:hover {
+            transform: scale(1.1);
+            color: var(--accent);
+        }
+
+        .mn-menu-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            overflow: visible;
+        }
+
+        .mn-right {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        /* 볼륨 창 본체 (원래 크기 120px 유지) */
+        .mn-vol-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            background: transparent;
+            border-radius: 20px;
+            width: 24px;
+            height: 24px;
+            overflow: hidden;
+            transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.3s;
+        }
+
+        .mn-vol-container.expanded {
+            width: 120px;
+            padding-left: 14px;
+            /* 👈 좌측 여백을 넉넉히 줘서 0%일 때 원이 안 잘리게 함 */
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 👇 1. 기본 브라우저 여백과 배경을 완전히 초기화 */
+        #volSlider {
+            width: 0;
+            opacity: 0;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: width 0.3s, opacity 0.3s;
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            /* 배경을 투명하게 (아래 트랙에서 그림) */
+            padding: 0;
+            /* 브라우저 기본 여백 제거 -> 끝까지 가게 하는 핵심 */
+        }
+
+        .mn-vol-container.expanded #volSlider {
+            width: 80px;
+            opacity: 1;
+        }
+
+        /* 👇 2. 실제 눈에 보이는 막대기(트랙)를 100% 꽉 차게 그림 */
+        #volSlider::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        /* 👇 3. 동그란 원(Thumb)을 트랙의 중앙에 맞춤 */
+        #volSlider::-webkit-slider-thumb {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            margin-top: -4px;
+            /* 막대(4px)와 원(12px)의 수직 중앙 정렬 */
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+            /* 살짝 그림자를 주어 더 잘 보이게 */
+        }
+
+        #volSlider:focus {
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+
+        .mn-vol-btn {
+            background: transparent;
+            border: 0;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .mn-vol-btn:hover {
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .mn-vol-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .mn-progress-pill {
+            position: absolute;
+            bottom: 0;
+            left: 16px;
+            right: 16px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .mn-bar {
+            height: 100%;
+            background: var(--hq-color);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* 통합 메뉴 */
+        #menu {
+            position: fixed;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 6px;
+            display: none;
+            visibility: hidden;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+            z-index: 9999;
+            min-width: 200px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            transform-origin: var(--origin-x, 50%) top;
+        }
+
+        #menu.visible {
+            display: block;
+            visibility: visible;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* 기본 꼬리: 화살표가 위를 향함 (메뉴가 아래로 열릴 때) */
+        #menu::before,
+        #menu::after {
+            content: "";
+            position: absolute;
+            left: var(--origin-x, 50%);
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        #menu::before {
+            top: -8px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid rgba(255, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        #menu::after {
+            top: -7px;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 7px solid rgba(30, 30, 30, 0.95);
+            z-index: 2;
+        }
+
+        /* 미니플레이어용 꼬리 (.menu-up): 화살표가 아래를 향함 (메뉴가 위로 열릴 때) */
+        #menu.menu-up {
+            transform-origin: var(--origin-x, 50%) bottom;
+        }
+
+        #menu.menu-up::before {
+            top: auto;
+            bottom: -8px;
+            border-bottom: none;
+            border-top: 8px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #menu.menu-up::after {
+            top: auto;
+            bottom: -7px;
+            border-bottom: none;
+            border-top: 7px solid rgba(30, 30, 30, 0.95);
+        }
+
+        /* 👇 누락되었던 메뉴 내부 항목 크기 복구 (아이콘 거대화 방지) */
+        .menu-item {
+            padding: 10px 14px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .menu-item svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            opacity: 0.8;
+            flex-shrink: 0;
+        }
+
+        /* [수정] 토스트 메시지: 위에서 내려오는 U자형 탭 스타일 */
+        #toast {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150%);
+            /* 화면 위로 숨김 */
+
+            /* U자 모양 만들기 (위쪽은 직각, 아래쪽은 둥글게) */
+            border-radius: 0 0 25px 25px;
+
+            /* 디자인 */
+            background: rgba(30, 30, 30, 0.95);
+            /* 진한 배경 */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: none;
+            /* 위쪽 테두리 없애서 화면에 붙은 느낌 */
+
+            padding: 16px 30px;
+            /* 넉넉한 패딩 */
+            min-width: 280px;
+            text-align: center;
+
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+
+            /* 애니메이션 */
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* 텐션감 있는 스르르 효과 */
+
+            z-index: 21000;
+            /* 최상단 */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            pointer-events: none;
+            /* 클릭 통과 */
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            /* 내려옴 */
+        }
+
+        #safeZone {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .radio-chk {
+            accent-color: var(--hq-color);
+            transform: scale(1.1);
+            margin: 0;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--sub);
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .radio-label:hover {
+            color: #fff;
+        }
+
+        .radio-label input:checked+span {
+            color: var(--hq-color);
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
+        }
+
+        /* 좋아요 카운트 태그 */
+        #likeCountTag svg {
+            width: 16px;
+            height: 16px;
+            fill: #ff3b30;
+        }
+
+        #likeCountTag.active {
+            color: var(--brand);
+            transform: scale(1.1);
+            text-shadow: 0 0 10px rgba(255, 0, 51, 0.5);
+        }
+
+        /* 닫기 아이콘 */
+        .close-icon {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--sub);
+            font-size: 14px;
+            opacity: 0.6;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .close-icon:hover {
+            color: #fff;
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* 인스타 하트 애니메이션 */
+        .insta-heart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 100px;
+            height: 100px;
+            color: #ff3b30;
+            pointer-events: none;
+            z-index: 100;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+            animation: instaLike 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .insta-heart svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        @keyframes instaLike {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+
+            15% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(-10deg);
+                opacity: 1;
+            }
+
+            30% {
+                transform: translate(-50%, -50%) scale(0.9) rotate(10deg);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.1) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 공통 메뉴 스타일 */
+        #commonMenu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 160px;
+        }
+
+        #commonMenu .menu-list-item {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            padding: 10px 14px;
+            background: transparent;
+            color: #fff !important;
+        }
+
+        #commonMenu .menu-list-item svg {
+            width: 18px !important;
+            height: 18px !important;
+            min-width: 18px !important;
+            margin-right: 10px !important;
+            fill: #fff !important;
+            filter: none !important;
+            margin-bottom: 0 !important;
+        }
+
+        #commonMenu .menu-list-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .menu-list-item {
+            border-radius: 12px !important;
+        }
+
+        /* 카테고리 메뉴 확장 */
+        #catMenu {
+            display: block !important;
+            padding: 12px !important;
+            width: 740px !important;
+            max-width: 95vw;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
+        .cat-grid-scroller {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr) !important;
+            gap: 8px;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 4px;
+        }
+
+        .cat-grid-scroller::-webkit-scrollbar {
+            display: none !important;
+        }
+
+
+        #ambient-bg,
+        #ambient-overlay {
+            z-index: -3 !important;
+        }
+
+        /* --- [추가] 메가 메뉴 하단 필터 스타일 --- */
+        .cat-footer {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 가운데 정렬 */
+            gap: 8px;
+            /* 버튼 사이 간격 */
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            flex-wrap: nowrap;
+            /* 줄바꿈 방지 (한 줄 강제) */
+            overflow-x: auto;
+            /* 화면 좁으면 가로 스크롤 */
+            white-space: nowrap;
+        }
+
+        .cat-footer-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            /* 가운데 정렬 */
+            gap: 20px;
+        }
+
+        .footer-item {
+            font-size: 14px;
+            color: var(--sub);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .footer-item:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-item.active {
+            color: var(--hq-color);
+            /* 활성화 색상 (하늘색) */
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+            font-weight: 700;
+        }
+
+        .cat-footer-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-right: 8px;
+            font-weight: 700;
+            display: none;
+            /* 스크린샷처럼 라벨 숨김 (원하면 block) */
+        }
+
+        /* 헤더 정리: 필터 버튼과 구분선 숨기기 */
+        #goalTrigger,
+        /* 관련성 버튼 */
+        #durationTrigger,
+        /* 길이 버튼 */
+        .radio-label[title="고음질 필터 적용"],
+        /* HQ 체크박스 */
+        header>.sep:nth-of-type(1),
+        /* 첫 번째 구분선 */
+        header>.sep:nth-of-type(2)
+
+        /* 두 번째 구분선 */
+            {
+            display: none !important;
+        }
+
+        /* 1. 막대기 본체: 뚝 끊김을 잡은 완벽한 무한 루프 */
+        #scrollProgressBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+
+            /* [핵심 해결책] 색상 사이클을 정확히 2번 반복합니다. */
+            background: linear-gradient(90deg,
+                    var(--hq-color), var(--accent), var(--brand), var(--accent), var(--hq-color),
+                    /* 1세트 (0~50%) */
+                    var(--accent), var(--brand), var(--accent), var(--hq-color)
+                    /* 2세트 (50~100%) */
+                );
+
+            /* 패턴이 2개 들어갔으므로 사이즈를 200%로 설정 */
+            background-size: 200% 100%;
+
+            z-index: 99999;
+            transition: width 0.1s ease-out;
+            pointer-events: none;
+            animation: gradientMove 6s linear infinite;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+        }
+
+        /* 2. 막대기 끝부분: 혜성 광원 (동일) */
+        #scrollProgressBar::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -2px;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px #fff, 0 0 20px 5px var(--accent);
+        }
+
+        /* 3. 애니메이션 (동일) */
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 100% 0%;
+            }
+        }
+
+        /* 채널 이름에 마우스 올렸을 때 효과 */
+        .u-ch-name:hover {
+            text-decoration: underline !important;
+            color: #fff !important;
+        }
+
+        /* 채널 로고에 마우스 올렸을 때 효과 */
+        .u-ch-img:hover {
+            filter: brightness(1.2);
+        }
+
+        /* --- 플레이어 스탯 HUD 스타일 --- */
+        #statsHUD {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            /* 화면 중앙 정렬을 위한 기본 위치 설정 */
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 320px;
+            background: rgba(20, 20, 20, 0.85);
+            border: 1px solid var(--hq-color);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.3), inset 0 0 20px rgba(0, 210, 255, 0.1);
+            z-index: 25000;
+            text-align: center;
+            padding: 24px;
+            border-radius: 20px;
+            transform-origin: center;
+        }
+
+        #statsHUD.visible {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .stat-title-text {
+            color: var(--hq-color);
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--hq-color);
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            color: var(--sub);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .stat-badge {
+            margin-top: 16px;
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(45deg, var(--accent), var(--brand));
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.5);
+            animation: pulseBadge 2s infinite;
+        }
+
+        @keyframes pulseBadge {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* --- 시네마 딥 포커스 모드 (긴급 수정 버전) --- */
+        #cinemaOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000 !important;
+            /* 투명도 없는 순수 블랙으로 우선 테스트 */
+            z-index: 8000 !important;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        #cinemaOverlay.active {
+            opacity: 0.96;
+            /* 켜졌을 때만 투명도 부여 */
+            pointer-events: auto;
+        }
+
+        /* 🚨 플레이어를 우주 끝까지 끌어올리기 */
+        body.cinema-on #p-wrap,
+        body.cinema-on #mini {
+            position: fixed !important;
+            z-index: 999999 !important;
+            /* 숫자를 압도적으로 높임 */
+            visibility: visible !important;
+            display: block !important;
+            opacity: 1 !important;
+        }
+
+        /* 시네마 모드 시 리스트 자체를 숨겨버리기 */
+        body.cinema-on #list {
+            display: none !important;
+            /* 리스트가 플레이어를 붙잡고 있다면 아예 없애버림 */
+        }
+
+        /* 헤더와 기타 UI 숨기기 */
+        body.cinema-on #header,
+        body.cinema-on .category-menu,
+        body.cinema-on #trendBar {
+            visibility: hidden !important;
+        }
+
+        /* --- API 키 입력 모달 스타일 --- */
+        .popup-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+        }
+
+        .popup-modal.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.9);
+            border: 1px solid var(--accent);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            transform: translateY(20px);
+            transition: 0.3s;
+        }
+
+        .popup-modal.visible .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .modal-content p {
+            color: var(--sub);
+            font-size: 13px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-content input {
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            height: 46px;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-btns button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .modal-btns button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        .modal-btns button.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--sub);
+        }
+
+        .modal-btns button.cancel:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- 설명란 (더보기/간략히) 스타일 --- */
+        .vid-info-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .vid-info-box:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .vid-desc {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            /* 기본 2줄 간략히 */
+        }
+
+        .vid-desc.expanded {
+            display: block;
+            -webkit-line-clamp: unset;
+        }
+
+        .desc-toggle {
+            margin-top: 8px;
+            font-weight: 700;
+            color: #fff;
+            display: inline-block;
+        }
+
+        /* --- 댓글 섹션 스타일 --- */
+        .cmt-section {
+            padding: 0 16px 20px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 16px;
+        }
+
+        .cmt-header {
+            font-size: 16px;
+            font-weight: 800;
+            margin: 16px 0;
+            color: #fff;
+        }
+
+        .cmt-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .cmt-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #333;
+            flex-shrink: 0;
+        }
+
+        .cmt-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cmt-author {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cmt-date {
+            font-weight: 400;
+            color: var(--sub);
+            font-size: 12px;
+        }
+
+        .cmt-text {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ddd;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .cmt-likes {
+            font-size: 12px;
+            color: var(--sub);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .cmt-likes svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .load-more-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        .load-more-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- 설명 및 댓글 토글 바 스타일 --- */
+        .info-toggle-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.3);
+            transition: background 0.2s;
+        }
+
+        .info-toggle-bar:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .info-toggle-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .info-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #extraInfoContainer {
+            display: none;
+        }
+
+        /* 기본적으로 숨김 처리 */
+        #extraInfoContainer.visible {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .kw-chip {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .kw-chip:hover {
+            background: rgba(255, 59, 48, 0.2);
+            border-color: #ff3b30;
+        }
+
+        .kw-del-btn {
+            color: #ff3b30;
+            cursor: pointer;
+            font-weight: 900;
+        }
+
+        .kw-del-btn:hover {
+            transform: scale(1.2);
+        }
+
+        /* 하단 네트워크 상태 바 (HUD) */
+        .network-hud {
+            position: fixed;
+            bottom: 0px;
+            left: 0;
+            width: 100vw;
+            height: 24px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.6));
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            z-index: 10000; /* 맨 위에 표시 */
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            pointer-events: none; /* 클릭 방해 금지 */
+            letter-spacing: 0.5px;
+        }
+
+        .network-hud.online {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .network-hud.offline {
+            color: #ff3b30;
+            font-weight: 700;
+            background: rgba(40, 0, 0, 0.9);
+        }
+
+        .net-stat-item {
+            margin: 0 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
