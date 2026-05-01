@@ -298,23 +298,30 @@ async function searchVideos(isNew, autoPlayFirst = false, isForceRefresh = false
             let newItems = [];
 
             if (ids) {
-                const dData = await fetchJson(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${ids}&key=${encodeURIComponent(API_KEY)}`, isForceRefresh);
-
-                const channelIds = [...new Set(dData.items.map(i => i.snippet.channelId))].slice(0, 50).join(',');
+                const channelIds = [...new Set(data.items.map(i => i.snippet.channelId))].slice(0, 50).join(',');
+                let dData = null;
                 let channelMap = new Map();
 
-                if (channelIds) {
-                    try {
-                        const cData = await fetchJson(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelIds}&key=${encodeURIComponent(API_KEY)}`, isForceRefresh);
-                        cData.items.forEach(c => {
-                            channelMap.set(c.id, {
-                                thumb: c.snippet.thumbnails.default?.url,
-                                subs: c.statistics.subscriberCount,
-                                customUrl: c.snippet.customUrl
-                            });
-                        });
-                    } catch (e) { logErrorToFile("채널 정보 로드 실패", e); }
-                }
+                // 🚀 핵심 성능 최적화: video 디테일과 channel 디테일을 병렬(Promise.all)로 동시 호출하여 대기 시간 반토막
+                await Promise.all([
+                    (async () => {
+                        dData = await fetchJson(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${ids}&key=${encodeURIComponent(API_KEY)}`, isForceRefresh);
+                    })(),
+                    (async () => {
+                        if (channelIds) {
+                            try {
+                                const cData = await fetchJson(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelIds}&key=${encodeURIComponent(API_KEY)}`, isForceRefresh);
+                                cData.items.forEach(c => {
+                                    channelMap.set(c.id, {
+                                        thumb: c.snippet.thumbnails.default?.url,
+                                        subs: c.statistics.subscriberCount,
+                                        customUrl: c.snippet.customUrl
+                                    });
+                                });
+                            } catch (e) { logErrorToFile("채널 정보 로드 실패", e); }
+                        }
+                    })()
+                ]);
 
                 const now = new Date();
 

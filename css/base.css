@@ -28,15 +28,10 @@
             padding: 6px 15px 120px 15px;
 
             font-family: -apple-system, BlinkMacSystemFont, "Pretendard", Roboto, sans-serif;
-            background: #000000;
+            background-color: #000000 !important;
             /* 까만 배경 유지 */
             color: var(--text);
             overflow-x: hidden;
-        }
-
-        /* 배경 효과 (숨김 및 완전한 검은색 적용) */
-        body {
-            background-color: #000000 !important;
         }
 
         #ambient-bg,

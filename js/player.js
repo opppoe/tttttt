@@ -6,9 +6,15 @@ function stopVisualizer() {
     if (typeof stopViz === 'function') stopViz();
 }
 
-// --- 📌 항상 위 고정 (PIP) 모드 로직 ---
+// --- 전역 상태 변수 모음 ---
 let isAlwaysOnTop = false;
 let isPipLocked = false; // 🚨 핵심: 중복 실행(더블 클릭) 방지용 자물쇠
+let isCinemaMode = false;
+let timer = null;
+let playerIdleTimer = null;
+let nativeVolSyncTimer = null;
+
+// --- 📌 항상 위 고정 (PIP) 모드 로직 ---
 
 async function toggleAlwaysOnTop() {
     if (isPipLocked) return; // 자물쇠가 잠겨있으면 중복 명령 무시
@@ -64,7 +70,6 @@ function updateAlwaysOnTopUI() {
 
 
 // --- 시네마 딥 포커스 모드 로직 ---
-let isCinemaMode = false;
 
 function toggleCinemaMode() {
     isCinemaMode = !isCinemaMode;
@@ -317,17 +322,34 @@ function onPlayerError(e) { if ([100, 101, 150, 153].includes(e.data)) { showToa
 
 
 function onStateChange(e) {
-    // ... (기존 변수들)
     const marquee = $('marqueeWrap');
     const thumb = $('miniThumb');
 
     if (e.data === 1) { // 🟢 재생 중 (PLAYING)
-        // 🚨 핵심 해결책: 재생이 시작되는 순간 볼륨을 다시 한번 꽉 잡아줍니다.
+        // 1. 영상 시작 순간 볼륨 한 번 더 강제 고정 (초기화 버그 방어)
         const savedVol = localStorage.getItem('yt_volume');
         if (savedVol !== null && e.target && e.target.setVolume) {
             e.target.unMute();
             e.target.setVolume(Number(savedVol));
         }
+
+        // 2. 유튜브 플레이어 기본 볼륨바 <-> 미니플레이어 볼륨바 실시간 동기화
+        if (nativeVolSyncTimer) clearInterval(nativeVolSyncTimer);
+        nativeVolSyncTimer = setInterval(() => {
+            // 유저가 하단 미니플레이어 볼륨을 드래그 중이 아닐 때만 체크
+            const isDragging = typeof isVolDragging !== 'undefined' ? isVolDragging : false;
+            if (player && typeof player.getVolume === 'function' && !isDragging) {
+                const nativeVol = player.getVolume();
+                const currentSavedVol = Number(localStorage.getItem('yt_volume') || 100);
+
+                // 유튜브 화면에서 볼륨을 바꿨다면? -> 로컬스토리지와 미니플레이어에 반영
+                if (nativeVol !== currentSavedVol) {
+                    localStorage.setItem('yt_volume', nativeVol);
+                    const slider = $('volSlider');
+                    if (slider) slider.value = nativeVol;
+                }
+            }
+        }, 500); // 0.5초마다 볼륨 변화 감지
 
         updatePlayBtnIcon(true);
         startTimer();
@@ -362,7 +384,6 @@ function prev() { if (queueIndex > 0) playVideo(queueIndex - 1); }
 function togglePlay() { if (!player || !player.getPlayerState) return; player.getPlayerState() === 1 ? player.pauseVideo() : player.playVideo(); }
 function closePlayer() { if (player) { player.destroy(); player = null; } $('playerBlock')?.remove(); stopTimer(); stopViz(); $('ambient-bg').style.background = '#000'; $('miniThumb').classList.remove('playing'); $('mini').classList.remove('visible'); }
 
-let timer = null;
 // 1️⃣ 재생 버튼 아이콘 동기화 로직 업데이트 (미니플레이어 + 커스텀플레이어 둘 다 변경)
 function updatePlayBtnIcon(isPlaying) {
     const btn = $('playBtn'); // 하단 미니플레이어
@@ -414,17 +435,27 @@ function seekCustomVideo(e) {
     if (dur) player.seekTo(dur * pos, true);
 }
 
-// 4️⃣ 커스텀 전체화면 로직 (웹 풀스크린 방식 - 100% 작동)
-function toggleCustomFullScreen(e) {
+// 4️⃣ 커스텀 전체화면 로직 (통합 버전)
+async function toggleCustomFullScreen(e) {
     if (e) e.stopPropagation(); // 클릭 씹힘 방지
 
-    // body에 is-fullscreen 클래스를 넣었다 뺐다 스위치 역할
-    document.body.classList.toggle('is-fullscreen');
+    try {
+        let isNowFullScreen = false;
+        if (window.electronAPI) {
+            isNowFullScreen = await window.electronAPI.toggleFullscreen();
+        } else {
+            isNowFullScreen = !document.body.classList.contains('is-fullscreen');
+        }
 
-    if (document.body.classList.contains('is-fullscreen')) {
-        showToast("📺 전체화면 모드 (ESC 또는 다시 더블클릭하여 해제)");
-    } else {
-        showToast("전체화면 해제");
+        if (isNowFullScreen) {
+            document.body.classList.add('is-fullscreen');
+            showToast("📺 전체화면 켜짐 (ESC로 해제)");
+        } else {
+            document.body.classList.remove('is-fullscreen');
+            showToast("전체화면 해제");
+        }
+    } catch (err) {
+        console.error("네이티브 전체화면 요청 실패:", err);
     }
 }
 
@@ -437,7 +468,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 // 5️⃣ 시네마틱 마우스 숨김 로직 (가만히 있으면 컨트롤러와 커서 숨김)
-let playerIdleTimer;
 function resetPlayerIdle() {
     const frame = $('customPlayerFrame');
     if (!frame) return;
@@ -485,31 +515,6 @@ function updateMiniPlayerToggleText() {
         icon.style.color = "var(--sub)";
     }
 }
-// 4️⃣ 커스텀 전체화면 로직 (맥 네이티브 통신 버전)
-async function toggleCustomFullScreen(e) {
-    if (e) e.stopPropagation(); // 클릭 씹힘 방지
-
-    try {
-        // main.js에 맥 네이티브 전체화면 토글을 요청하고 결과를 받음
-        let isNowFullScreen = false;
-        if (window.electronAPI) {
-            isNowFullScreen = await window.electronAPI.toggleFullscreen();
-        } else {
-            isNowFullScreen = !document.body.classList.contains('is-fullscreen');
-        }
-
-        // CSS UI도 맞춰서 변경 (다른 UI 숨기기 및 영상 꽉 채우기)
-        if (isNowFullScreen) {
-            document.body.classList.add('is-fullscreen');
-            showToast("📺 맥 전체화면 켜짐 (ESC로 해제)");
-        } else {
-            document.body.classList.remove('is-fullscreen');
-            showToast("전체화면 해제");
-        }
-    } catch (err) {
-        console.error("네이티브 전체화면 요청 실패:", err);
-    }
-}
 
 
 // 헤더 메뉴 아코디언 열기/닫기 제어
@@ -537,56 +542,5 @@ function onPlayerReady(e) {
         setTimeout(() => {
             e.target.playVideo();
         }, 150);
-    }
-}
-let nativeVolSyncTimer = null; // 상단 변수 영역에 추가해 주세요.
-
-function onStateChange(e) {
-    const marquee = $('marqueeWrap');
-    const thumb = $('miniThumb');
-
-    if (e.data === 1) { // 🟢 재생 중
-        // 1. 영상 시작 순간 볼륨 한 번 더 강제 고정 (초기화 버그 방어)
-        const savedVol = localStorage.getItem('yt_volume');
-        if (savedVol !== null && e.target && e.target.setVolume) {
-            e.target.unMute();
-            e.target.setVolume(Number(savedVol));
-        }
-
-        // 2. 유튜브 플레이어 기본 볼륨바 <-> 미니플레이어 볼륨바 실시간 동기화
-        if (nativeVolSyncTimer) clearInterval(nativeVolSyncTimer);
-        nativeVolSyncTimer = setInterval(() => {
-            // 유저가 하단 미니플레이어 볼륨을 드래그 중이 아닐 때만 체크
-            if (player && typeof player.getVolume === 'function' && !isVolDragging) {
-                const nativeVol = player.getVolume();
-                const currentSavedVol = Number(localStorage.getItem('yt_volume') || 100);
-
-                // 유튜브 화면에서 볼륨을 바꿨다면? -> 로컬스토리지와 미니플레이어에 반영
-                if (nativeVol !== currentSavedVol) {
-                    localStorage.setItem('yt_volume', nativeVol);
-                    const slider = $('volSlider');
-                    if (slider) slider.value = nativeVol;
-                }
-            }
-        }, 500); // 0.5초마다 볼륨 변화 감지
-
-        updatePlayBtnIcon(true);
-        startTimer();
-        startVisualizer();
-        thumb.classList.add('playing');
-        thumb.classList.remove('paused');
-        marquee.classList.remove('paused');
-
-    } else if (e.data === 2 || e.data === 0) { // ⏸️ 일시정지 또는 ⏹️ 종료
-        // 영상이 멈추면 볼륨 감지 타이머도 멈춤
-        if (nativeVolSyncTimer) clearInterval(nativeVolSyncTimer);
-
-        updatePlayBtnIcon(false);
-        stopTimer();
-        stopVisualizer();
-        thumb.classList.add('paused');
-        marquee.classList.add('paused');
-
-        if (e.data === 0) next();
     }
 }

@@ -571,8 +571,10 @@ function renderResults(items, isNew, targetId) {
         const engTag = (!v.isPlaylist && v.engagement > 2) ? `<span class="tag-hot" style="background:linear-gradient(90deg, #ff9500, #ff5e00); margin-left:4px; color:#fff; border:none; box-shadow:0 0 10px rgba(255,149,0,0.3);">🔥 ${v.engagement}%</span>` : '';
         const maxResThumb = v.thumb ? v.thumb.replace(/mqdefault|hqdefault|sddefault|default/g, 'maxresdefault') : '';
 
+        // 🚀 성능 최적화: 렌더링 애니메이션 딜레이 캡핑 (DOM 렌더링 병목 방지)
+        const delay = Math.min(idx, 15) * 0.03;
         const tmp = document.createElement('div');
-        tmp.innerHTML = `<div class="u-card" id="c-${v.id}" onclick="${clickAction}" style="${seedStyle}; animation-delay: ${idx * 0.03}s;">
+        tmp.innerHTML = `<div class="u-card" id="c-${v.id}" onclick="${clickAction}" style="${seedStyle}; animation-delay: ${delay}s;">
       <div class="u-thumb">
         <img src="${v.thumb}" loading="lazy" onmouseover="if('${maxResThumb}') this.src='${maxResThumb}'" onmouseleave="this.src='${v.thumb}'">
         <div class="u-dur">${d}</div>
