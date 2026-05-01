@@ -1,23 +1,3 @@
-// --- 헤더 폴딩 (접기/펴기) 관련 함수 ---
-window.toggleHeader = function() {
-    const header = document.querySelector('header');
-    if (!header) return;
-    header.classList.toggle('folded');
-    const isFolded = header.classList.contains('folded');
-    localStorage.setItem('yt_header_folded', isFolded);
-};
-
-window.initHeaderState = function() {
-    const isFolded = localStorage.getItem('yt_header_folded') === 'true';
-    const header = document.querySelector('header');
-    if (!header) return;
-    if (isFolded) {
-        header.classList.add('folded');
-    } else {
-        header.classList.remove('folded');
-    }
-};
-
 const commonMenuData = {
     region: {
         items: [

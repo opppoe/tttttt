@@ -60,7 +60,7 @@
     <div id="suggestBox"></div>
     <input type="file" id="uploadFile" style="display:none" onchange="handleFileSelect(event)" accept=".json">
 
-    <header>
+    <header id="mainHeader">
 
         <input type="hidden" id="region" value="KR">
         <input type="hidden" id="goal" value="ref">
@@ -88,7 +88,7 @@
                 <button onclick="clearSearch()" class="close-icon" title="검색어 지우기">✕</button>
             </div>
 
-            <button class="icon-btn" onclick="toggleHeader()" id="headerToggleBtn" title="메뉴 접기/펴기" style="flex-shrink:0;">
+            <button class="icon-btn" onclick="toggleHeader()" id="headerToggleBtn" title="메뉴 접기/펴기" style="flex-shrink:0; -webkit-app-region: no-drag;">
                 <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:currentColor; transition:transform 0.3s;">
                     <path d="M7 10l5 5 5-5z" />
                 </svg>
@@ -422,6 +422,20 @@
     <!-- 하단 네트워크 상태 바 -->
     <div id="networkStatusHUD" class="network-hud" style="display: none;"></div>
 
+    <script>
+        function toggleHeader() {
+            const h = document.getElementById('mainHeader');
+            if (h) {
+                h.classList.toggle('folded');
+                localStorage.setItem('yt_header_folded', h.classList.contains('folded'));
+            }
+        }
+        function initHeaderState() {
+            const isFolded = localStorage.getItem('yt_header_folded') === 'true';
+            const h = document.getElementById('mainHeader');
+            if (h && isFolded) h.classList.add('folded');
+        }
+    </script>
     <script src="js/state.js"></script>
     <script src="js/store.js"></script>
     <script src="js/api.js"></script>
