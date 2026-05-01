@@ -727,9 +727,6 @@
         }
 
         .u-card:hover {
-            will-change: box-shadow;
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             z-index: 5;
         }
 
