@@ -11,6 +11,7 @@ window.addEventListener('load', () => {
     // 👇 앱 켤 때 저장된 볼륨 막대기 위치 동기화 (이 두 줄 추가!)
     const savedVol = localStorage.getItem('yt_volume');
     if (savedVol !== null) $('volSlider').value = savedVol;
+    initHeaderState();
     makeMiniDraggable();
 });
 

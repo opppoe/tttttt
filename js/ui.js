@@ -1594,3 +1594,20 @@ async function updateNetworkData() {
 
     hud.innerHTML = html;
 }
+
+function toggleHeader() {
+    const header = document.querySelector('header');
+    header.classList.toggle('folded');
+    const isFolded = header.classList.contains('folded');
+    localStorage.setItem('yt_header_folded', isFolded);
+}
+
+function initHeaderState() {
+    const isFolded = localStorage.getItem('yt_header_folded') === 'true';
+    const header = document.querySelector('header');
+    if (isFolded) {
+        header.classList.add('folded');
+    } else {
+        header.classList.remove('folded');
+    }
+}
