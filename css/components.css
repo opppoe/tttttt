@@ -80,8 +80,10 @@
             font-weight: 600;
             transition: background 0.2s, color 0.2s, box-shadow 0.2s, border 0.2s;
             background: transparent;
-            padding: 10px 4px;
-            aspect-ratio: 1 / 1.1;
+            padding: 12px 4px;
+            border: 1px solid transparent; /* 1px border shift 방지 */
+            height: 90px; /* aspect-ratio 대신 고정 높이 사용 (사파리 확대 버그 원인 제거) */
+            transform: translateZ(0); /* 사파리 호버 렌더링 글리치 방지 */
         }
 
         #catMenu .cat-item:hover {
