@@ -727,7 +727,17 @@
         }
 
         .u-card:hover {
+            transform: none !important;
+            border-color: rgba(255, 255, 255, 0.05) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+            background: rgba(255, 255, 255, 0.03) !important;
             z-index: 5;
+            transition: none !important;
+        }
+
+        .u-card:hover .quick-actions {
+            transform: none !important;
+            transition: none !important;
         }
 
         .u-card.active {
