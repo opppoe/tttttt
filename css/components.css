@@ -11,16 +11,16 @@
             overflow: visible !important;
             visibility: hidden;
             opacity: 0;
-            transform: scale(0.95);
+            transform: translateY(-10px);
             z-index: 20000;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
-            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s, visibility 0.2s;
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s, visibility 0.2s;
         }
 
         .popup-menu.visible {
             visibility: visible;
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0);
         }
 
         .popup-menu::before {
@@ -155,7 +155,7 @@
             min-width: 240px;
             opacity: 0;
             visibility: hidden;
-            transform: scale(0.95) translateY(-10px);
+            transform: translateY(-10px);
             transform-origin: top right;
             transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 
@@ -195,7 +195,7 @@
         #headerMenu.visible {
             opacity: 1;
             visibility: visible;
-            transform: scale(1) translateY(0);
+            transform: translateY(0);
         }
 
         .hm-item {
