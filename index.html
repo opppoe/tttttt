@@ -15,6 +15,25 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/player.css">
+    <script>
+        // 최상단 전역 함수로 정의 (대소문자 모두 대응)
+        function toggleHeader() {
+            const h = document.getElementById('mainHeader');
+            if (h) {
+                h.classList.toggle('folded');
+                localStorage.setItem('yt_header_folded', h.classList.contains('folded'));
+            }
+        }
+        window.toggleHeader = toggleHeader;
+        window.toggleheader = toggleHeader; // 혹시 모를 대소문자 문제 방지
+
+        function initHeaderState() {
+            const isFolded = localStorage.getItem('yt_header_folded') === 'true';
+            const h = document.getElementById('mainHeader');
+            if (h && isFolded) h.classList.add('folded');
+        }
+        window.initHeaderState = initHeaderState;
+    </script>
 </head>
 
 <body>
@@ -419,23 +438,7 @@
         </div>
     </div>
 
-    <!-- 하단 네트워크 상태 바 -->
     <div id="networkStatusHUD" class="network-hud" style="display: none;"></div>
-
-    <script>
-        function toggleHeader() {
-            const h = document.getElementById('mainHeader');
-            if (h) {
-                h.classList.toggle('folded');
-                localStorage.setItem('yt_header_folded', h.classList.contains('folded'));
-            }
-        }
-        function initHeaderState() {
-            const isFolded = localStorage.getItem('yt_header_folded') === 'true';
-            const h = document.getElementById('mainHeader');
-            if (h && isFolded) h.classList.add('folded');
-        }
-    </script>
     <script src="js/state.js"></script>
     <script src="js/store.js"></script>
     <script src="js/api.js"></script>
