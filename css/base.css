@@ -112,10 +112,6 @@
             transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        header.folded {
-            padding-bottom: 10px !important;
-        }
-
         header::-webkit-scrollbar,
         .header-row::-webkit-scrollbar {
             display: none;
@@ -123,29 +119,6 @@
 
         .header-row {
             width: 100%;
-        }
-
-        .bottom-row {
-            max-height: 100px;
-            opacity: 1;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            margin-top: 12px;
-            padding-bottom: 4px;
-        }
-
-        header.folded .bottom-row {
-            max-height: 0;
-            opacity: 0;
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            pointer-events: none;
-            margin-bottom: -4px;
-        }
-
-        header.folded #headerToggleBtn svg {
-            transform: rotate(-90deg);
         }
 
         header * {

@@ -34,6 +34,27 @@
         }
         window.initHeaderState = initHeaderState;
     </script>
+    <style>
+        /* 폴딩(접기) 상태일 때 하단 줄 숨김 강제 적용 */
+        #mainHeader.folded .bottom-row {
+            display: none !important;
+            max-height: 0 !important;
+            opacity: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* 폴딩 상태일 때 헤더 여백 조정 */
+        #mainHeader.folded {
+            padding-bottom: 10px !important;
+        }
+
+        /* 화살표 회전 */
+        #mainHeader.folded #headerToggleBtn svg {
+            transform: rotate(180deg) !important;
+        }
+    </style>
 </head>
 
 <body>

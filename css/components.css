@@ -83,6 +83,8 @@
             padding: 12px 4px;
             border: 1px solid transparent; /* 1px border shift 방지 */
             height: 90px; /* aspect-ratio 대신 고정 높이 사용 */
+            min-width: 0; /* ✨ 긴 텍스트로 인한 팽창 방지 */
+            overflow: hidden; /* ✨ 긴 텍스트로 인한 팽창 방지 */
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             -webkit-font-smoothing: antialiased;
@@ -1712,12 +1714,13 @@
 
         .cat-grid-scroller {
             display: grid;
-            grid-template-columns: repeat(4, 1fr) !important; /* 4칸 배치로 모바일 최적화 */
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important; /* ✨ 1fr의 auto 최소폭 팽창 버그 방지 */
             gap: 8px;
             padding: 4px;
             max-height: 75vh !important; /* 화면 가득 차지 않게 안쪽 요소에 스크롤 */
             overflow-y: auto !important; /* 세로 스크롤 허용 */
             overflow-x: hidden !important;
+            width: 100%;
         }
 
         .cat-grid-scroller::-webkit-scrollbar {
