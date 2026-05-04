@@ -212,8 +212,9 @@ async function searchVideos(isNew, autoPlayFirst = false, isForceRefresh = false
                 if (currentCategoryId !== '0') url += `&videoCategoryId=${currentCategoryId}`;
                 if (isLiveMode) url += `&eventType=live`;
 
-                const durVal = $('duration').value;
-                if (durVal === 'long') url += `&videoDuration=long`;
+                // YouTube API의 videoDuration 버그(결과 누락) 방지를 위해 서버측 필터링을 제거하고 클라이언트 필터링으로 통일
+                // const durVal = $('duration').value;
+                // if (durVal === 'long') url += `&videoDuration=long`;
 
                 if (isHqChecked) url += `&videoDefinition=high`;
             }
